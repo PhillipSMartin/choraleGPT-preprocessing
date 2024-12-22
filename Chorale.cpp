@@ -12,39 +12,44 @@
     }
 
     // map part ids to part names
-    std::map<std::string, std::string> _part_ids;
-    XMLElement* _partList = XmlUtils::try_get_child( doc_.RootElement(), "part-list" );
-    if (_partList) {
+    std::map<std::string, std::string> _partIds;
+    XMLElement* _partListElement = XmlUtils::try_get_child( doc_.RootElement(), "part-list" );
+    if (_partListElement) {
 
-        XMLElement* _scorePart = try_get_child( _partList, "score-part" );
-        if (!_scorePart)
+        XMLElement* _scorePartElement = try_get_child( _partListElement, "score-part" );
+        if (!_scorePartElement)
             return false;
 
-        while (_scorePart) {
-            const char* _partId = _scorePart->Attribute( "id" );
-            XMLElement* _partName = try_get_child( _scorePart, "part-name" );
-            if (!_partName)
+        while (_scorePartElement) {
+            const char* _partId = _scorePartElement->Attribute( "id" );
+            XMLElement* _partNameElement = try_get_child( _scorePartElement, "part-name" );
+            if (!_partNameElement)
                 return false;
 
-            _part_ids[ _partId ] = _partName->GetText();
-            _scorePart = _scorePart->NextSiblingElement( "score-part" );
+            _partIds[ _partId ] = _partNameElement->GetText();
+            _scorePartElement = _scorePartElement->NextSiblingElement( "score-part" );
         }
     }
 
-    XMLElement* _part = try_get_child( doc_.RootElement(), "part");
-    if (!_part)
+    XMLElement* _partElement = try_get_child( doc_.RootElement(), "part");
+    if (!_partElement)
         return false;
 
-    while (_part) {
-        auto _it = _part_ids.find( _part->Attribute( "id" ) );
-        if (_it == _part_ids.end())
+    while (_partElement) {
+        auto _it = _partIds.find( _partElement->Attribute( "id" ) );
+        if (_it == _partIds.end())
         {
-            std::cerr << "Part id not found in part_list: " << _part->Attribute( "id" ) << std::endl;
+            std::cerr << "Part id not found in part_list: " << _partElement->Attribute( "id" ) << std::endl;
             return false;
         }
-        part_list_[ _it->second ] = _part;
-        _part = _part->NextSiblingElement("part");
+        partList_[ _it->second ] = _partElement;
+        _partElement = _partElement->NextSiblingElement("part");
     }
     return true;
+}
+
+tinyxml2::XMLElement* Chorale::get_part( const std::string partName ) const { 
+    auto it = partList_.find(partName);
+    return (it != partList_.end()) ? it->second : nullptr;
 }
 

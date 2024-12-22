@@ -1,6 +1,9 @@
+#include "Arguments.h"
 #include "Chorale.h"
 #include "Part.h"
+
 #include <iostream>
+#include <string>
 
 using namespace tinyxml2;
 
@@ -70,39 +73,24 @@ const char* get_part_id( XMLElement* partList, const char* partName ) {
     return nullptr;
 }
 
-
 int main( int argc, char** argv ) { 
-    // load xml file passed as first argument
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <xml_file> [<part_name>]" << std::endl;
+    Arguments args;
+    if (!args.parse_command_line(argc, argv))
         return 1;
-    }
 
-    const char* _fileName = argv[1];
-    const char* _partName = (argc > 2) ? argv[2] : "Soprano";
-
-    Chorale _chorale{_fileName};
+    // Initialze Chorale 
+    Chorale _chorale{args.get_file_name()};
     if (!_chorale.load_xml_file())
         return 1;
     if (!_chorale.build_part_list())
         return 1;
 
-    // XMLElement* root = get_root( argv[1] );
-    // if (!root) {
-    //     return 1;
-    // }
-
-    // // Find id of Soprano part
-    // XMLElement* partList = root->FirstChildElement( "part-list" );
-    // const char* partId = get_part_id(partList, _partName);
-    // if (!partId) {
-    //     return 1;
-    // }
-
-    // XMLElement* _partElement = get_part( root, partId );
-    // Part  _part( _partName );
-    // _part.parse_musicXml( _partElement );
-    // std::cout << _part << std::endl;
+    // Print requested parts
+    for (const std::string& _partName : args.get_parts_to_parse()) {
+        Part _part{_partName};
+        _part.parse_musicXml( _chorale.get_part( _partName ) );
+        std::cout << _part << std::endl;
+    }
 
     return 0;
 }
