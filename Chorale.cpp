@@ -1,15 +1,13 @@
 #include "Chorale.h"
 #include "XmlUtils.h"
+
+#include <curl/curl.h>
 #include <iostream>
 
 using namespace tinyxml2;
 using namespace XmlUtils;
 
-bool Chorale::load_xml_file() { 
-    isXmlLoaded_ = XmlUtils::load_xml_file( doc_, fileName_ );
-    if (!isXmlLoaded_) 
-        return false;
-
+bool Chorale::parse_chorale_data() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit" );
     if (_creditElement) {
         XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words" );
@@ -19,28 +17,44 @@ bool Chorale::load_xml_file() {
 
     return true;
 }
-// sudo apt-get install libcurl4-openssl-dev
-// #include <curl/curl.h>
 
-// bool Chorale::load_xml_file() {
-//     CURL* curl = curl_easy_init();
-//     std::string buffer;
+bool Chorale::load_from_file() { 
+    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource_ );
+    if (!isXmlLoaded_) 
+        return false;
+
+    return parse_chorale_data();
+}
+
+bool Chorale::load_from_url() {
+    CURL* curl = curl_easy_init();
+    std::string buffer;
     
-//     curl_easy_setopt(curl, CURLOPT_URL, s3Url_.c_str());
-//     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-//     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+    curl_easy_setopt(curl, CURLOPT_URL, xmlSource_);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
     
-//     CURLcode result = curl_easy_perform(curl);
-//     curl_easy_cleanup(curl);
+    CURLcode result = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
     
-//     if (result != CURLE_OK)
-//         return false;
+    if (result != CURLE_OK) {
+        std::cerr << "Failed to download XML file, rc=" << result << std::endl;
+        return false;
+    }
         
-//     isXmlLoaded_ = (doc_.Parse(buffer.c_str()) == XML_SUCCESS);
-//     // ... rest of your existing code ...
-//     return true;
-// }
+    isXmlLoaded_ = XmlUtils::load_from_buffer( doc_, buffer.c_str() );
+    if (!isXmlLoaded_) 
+        return false;
 
+    return parse_chorale_data();
+}
+
+size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
+    size_t realsize = size * nmemb;
+    std::string* buffer = static_cast<std::string*>(userp);
+    buffer->append((char*)contents, realsize);
+    return realsize;
+}
 
 bool Chorale::build_part_list() {
     if (!isXmlLoaded_) {

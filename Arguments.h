@@ -2,12 +2,18 @@
 #include <args.hxx>
 
 class Arguments {
+    public:
+        enum XmlSourceType {
+            FILE,
+            URL
+        };
+
     private:
         args::ArgumentParser parser_{"This program extracts parts from a music xml file", ""};
         args::HelpFlag help_{parser_, "help", "Display this help menu", {'h', "help"}};
 
         // Define positional argument
-        args::Positional<std::string> fileName_{parser_, "file", "The music xml file name to process"};
+        args::Positional<std::string> xmlSource_{parser_, "source", "The music xml file name or url to process"};
 
         // Define optional switches
         args::Flag soprano_{parser_, "Soprano", "Parse the soprano part", {'s', "soprano"}};
@@ -26,6 +32,10 @@ class Arguments {
     public:
         Arguments() {}
         bool parse_command_line(int argc, char** argv);
-        const char* get_file_name() { return args::get( fileName_ ).c_str(); }
+
+        const char* get_xml_source() { return args::get( xmlSource_ ).c_str(); }
+        XmlSourceType get_xml_source_type() {
+            return (args::get( xmlSource_ ).find("http") == 0) ? URL : FILE;
+        }
         std::vector<std::string> get_parts_to_parse();
 };

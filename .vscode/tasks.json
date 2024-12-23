@@ -11,7 +11,8 @@
 				"${workspaceFolder}/*.cpp",
 				"-o",
 				"${fileDirname}/tokenize",
-				"-ltinyxml2"
+				"-ltinyxml2",
+				"-lcurl"
 			],
 			"options": {
 				"cwd": "${fileDirname}"

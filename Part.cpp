@@ -4,6 +4,11 @@
 using namespace tinyxml2;
 
 bool Part::parse_musicXml( tinyxml2::XMLElement* part ) {
+    if (!part) {
+        std::cerr << "part element is null" << std::endl;
+        return false;
+    }
+
     // Get the first measure
     XMLElement* measure = try_get_child( part, "measure" );
 
@@ -27,6 +32,9 @@ bool Part::parse_musicXml( tinyxml2::XMLElement* part ) {
 }
 
 bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
+    // // for debugging
+    // XmlUtils::printElement( attributes );
+
     XMLElement* key = try_get_child( attributes, "key" );
     XMLElement* fifths = try_get_child( key, "fifths" ); 
     if (fifths) {
