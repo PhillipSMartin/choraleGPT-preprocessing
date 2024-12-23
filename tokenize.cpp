@@ -86,11 +86,13 @@ int main( int argc, char** argv ) {
         return 1;
 
     // Print requested parts
+    std::cout << "Chorale: " << _chorale.get_title() << "\n\n";
     for (const std::string& _partName : args.get_parts_to_parse()) {
         Part _part{_partName};
         _part.parse_musicXml( _chorale.get_part( _partName ) );
-        std::cout << _part << std::endl;
+        std::cout << _part << '\n';
     }
+    std::cout << std::endl;
 
     return 0;
 }

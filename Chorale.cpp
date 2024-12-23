@@ -1,11 +1,48 @@
- #include "Chorale.h"
- #include "XmlUtils.h"
- #include <iostream>
+#include "Chorale.h"
+#include "XmlUtils.h"
+#include <iostream>
 
- using namespace tinyxml2;
- using namespace XmlUtils;
+using namespace tinyxml2;
+using namespace XmlUtils;
 
- bool Chorale::build_part_list() {
+bool Chorale::load_xml_file() { 
+    isXmlLoaded_ = XmlUtils::load_xml_file( doc_, fileName_ );
+    if (!isXmlLoaded_) 
+        return false;
+
+    XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit" );
+    if (_creditElement) {
+        XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words" );
+        if (_creditWordsElement)
+            title_ = _creditWordsElement->GetText();
+    }
+
+    return true;
+}
+// sudo apt-get install libcurl4-openssl-dev
+// #include <curl/curl.h>
+
+// bool Chorale::load_xml_file() {
+//     CURL* curl = curl_easy_init();
+//     std::string buffer;
+    
+//     curl_easy_setopt(curl, CURLOPT_URL, s3Url_.c_str());
+//     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+//     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+    
+//     CURLcode result = curl_easy_perform(curl);
+//     curl_easy_cleanup(curl);
+    
+//     if (result != CURLE_OK)
+//         return false;
+        
+//     isXmlLoaded_ = (doc_.Parse(buffer.c_str()) == XML_SUCCESS);
+//     // ... rest of your existing code ...
+//     return true;
+// }
+
+
+bool Chorale::build_part_list() {
     if (!isXmlLoaded_) {
          std::cerr << "XML file not loaded" << std::endl;
          return false;

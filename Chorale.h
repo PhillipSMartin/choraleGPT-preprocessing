@@ -9,14 +9,14 @@ class Chorale {
         tinyxml2::XMLDocument doc_;
         bool isXmlLoaded_ = false;
 
+        std::string title_;
         std::map<std::string, tinyxml2::XMLElement*> partList_;
 
     public:
         Chorale( const char* fileName ) : fileName_( fileName ) {}
-        bool load_xml_file() { 
-            return isXmlLoaded_ = XmlUtils::load_xml_file( doc_, fileName_ );
-        }
-
+        bool load_xml_file();
         bool build_part_list();
+
+        std::string get_title() const { return title_; }
         tinyxml2::XMLElement* get_part( const std::string partName ) const;
 };
