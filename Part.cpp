@@ -38,7 +38,7 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
     XMLElement* key = try_get_child( attributes, "key" );
     XMLElement* fifths = try_get_child( key, "fifths" ); 
     if (fifths) {
-        key_ = static_cast<Key>( atoi( fifths->GetText() ) );   
+        key_ = atoi( fifths->GetText() );   
     }
 
     XMLElement* mode = try_get_child( key, "mode" );
@@ -115,3 +115,4 @@ std::ostream& operator <<( std::ostream& os, const Part& part)
     os << part.line_ << std::endl;
     return os;
 }
+

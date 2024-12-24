@@ -7,37 +7,33 @@
 
 class Part {
     public:
-        enum Key {
-            C = 0,
-            C_SHARP = 7,
-            D_FLAT = -5,
-            D = 2,
-            E_FLAT = -3,
-            E = 4,
-            F = -1,
-            F_SHARP = 6,
-            G_FLAT = -6,
-            G = 1,
-            A_FLAT = -4,
-            A = 3,
-            B_FLAT = -2,
-            B = 5
-        };
         enum Mode {
             MAJOR,
             MINOR
         };
 
         // special tokens
-        static constexpr const char* SOC = "<soc>";  // start of chorale
-        static constexpr const char* EOM = "<eom>";  // end of measure
-        static constexpr const char* EOP = "<eop>";  // end of phrase
-        static constexpr const char* EOC = "<eoc>";  // end of chorale
+        static inline const char* SOC = "[SOC]";  // start of chorale
+        static inline const char* EOM = "[EOM]";  // end of measure
+        static inline const char* EOP = "[EOP]";  // end of phrase
+        static inline const char* EOC = "[EOC]";  // end of chorale
 
     private:
+
+        static inline const std::string circle_of_fifths_[] = {
+           "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#",
+        };
+        static int index_of_C() {
+            for (int i = 0; i < sizeof(circle_of_fifths_)/sizeof(circle_of_fifths_[0]); i++) {
+                if (circle_of_fifths_[i] == "C") 
+                   return i;
+            }
+            return -1; 
+        }
+
         int beatsPerMeasure_ = 0;
         int divisionsPerBeat_ = 0;
-        Key key_ = Key::C;
+        int key_ = 0;
         Mode mode_ = Mode::MAJOR;
         std::string partName_;
 
@@ -65,9 +61,16 @@ class Part {
         std::string get_partName() const { return partName_; }
         int get_beatsPerMeasure() const { return beatsPerMeasure_; }
         int get_divisionsPerBeat() const { return divisionsPerBeat_; }
-        Key get_key() const { return key_; }
+        int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
 
+        std::string key_to_string() const
+        {
+            return circle_of_fifths_[key_ + index_of_C() + (mode_ == Mode::MINOR ? 3 : 0)];
+        }
+        std::string mode_to_string() const {
+            return mode_ == Mode::MAJOR ? "Major" : "Minor";
+        }
         friend std::ostream& operator <<( std::ostream& os, const Part& part);
 
     private:
@@ -79,30 +82,6 @@ class Part {
 
         // parse the MusicXML 'note' element, append words to line_ accordingly
         bool parse_note( tinyxml2::XMLElement* note );
-
-        std::string key_to_string() const {
-            switch (key_) {
-                case Key::C: return "C";
-                case Key::C_SHARP: return "C_SHARP";
-                case Key::D_FLAT: return "D_FLAT";
-                case Key::D: return "D";
-                case Key::E_FLAT: return "E_FLAT";
-                case Key::E: return "E";
-                case Key::F: return "F";
-                case Key::F_SHARP: return "F_SHARP";
-                case Key::G_FLAT: return "G_FLAT";
-                case Key::G: return "G";
-                case Key::A_FLAT: return "A_FLAT";
-                case Key::A: return "A";
-                case Key::B_FLAT: return "B_FLAT";
-                case Key::B: return "B";
-                default: return "UNKNOWN";
-            }
-        }
-
-        std::string mode_to_string() const {
-            return mode_ == Mode::MAJOR ? "MAJOR" : "MINOR";
-        }
 
         tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName ) {
             return XmlUtils::try_get_child( parent, childName, partName_.c_str() );
