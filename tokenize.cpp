@@ -101,6 +101,8 @@ int main( int argc, char** argv ) {
         Part _part{_partName};
         _part.parse_musicXml( _chorale.get_part( _partName ) );
         std::cout << _part << '\n';
+        _part.transpose();
+        std::cout << _part << '\n';
     }
     std::cout << std::endl;
 
