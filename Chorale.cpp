@@ -1,11 +1,16 @@
 #include "Chorale.h"
 #include "XmlUtils.h"
 
+#include <cmath>
 #include <curl/curl.h>
 #include <iostream>
+#include <ranges>
+#include <string_view>
+#include <vector>
 
 using namespace tinyxml2;
 using namespace XmlUtils;
+using namespace std::literals;
 
 bool Chorale::parse_chorale_data() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit" );
@@ -19,7 +24,7 @@ bool Chorale::parse_chorale_data() {
 }
 
 bool Chorale::load_from_file() { 
-    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource_ );
+    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource_.c_str() );
     if (!isXmlLoaded_) 
         return false;
 
@@ -102,5 +107,11 @@ bool Chorale::build_part_list() {
 tinyxml2::XMLElement* Chorale::get_part( const std::string partName ) const { 
     auto it = partList_.find(partName);
     return (it != partList_.end()) ? it->second : nullptr;
+}
+
+std::string Chorale::get_BWV() const {
+    auto _it = std::find(xmlSource_.rbegin(), xmlSource_.rend(), '/');
+    unsigned int _bwv = std::stoi(xmlSource_.substr(std::distance(_it, xmlSource_.rend())));
+    return "BWV "s + std::to_string( static_cast<int>( std::floor( _bwv / 100 ) ) ) + "."s + std::to_string(_bwv % 100);
 }
 

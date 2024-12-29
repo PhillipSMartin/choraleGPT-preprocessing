@@ -20,13 +20,20 @@ class Part {
         };
 
         // special tokens
-        static inline const char* SOC = "[SOC]";  // start of chorale
-        static inline const char* EOM = "[EOM]";  // end of measure
-        static inline const char* EOP = "[EOP]";  // end of phrase
-        static inline const char* EOC = "[EOC]";  // end of chorale
+        static inline const std::string SOC = "[SOC]";  // start of chorale
+        static inline const std::string EOM = "[EOM]";  // end of measure
+        static inline const std::string EOP = "[EOP]";  // end of phrase
+        static inline const std::string EOC = "[EOC]";  // end of chorale
+
+        // header parameters
+        static inline const std::string ID = "[ID: ";  
+        static inline const std::string PART = ", PART: ";
+        static inline const std::string KEY = ", KEY: ";
+        static inline const std::string BEATS = ", BEATS: ";
+        static inline const std::string SUB_BEATS = ", SUB-BEATS: ";
+        static inline const std::string EOH = "]";
 
     private:
-
         static inline const std::string circle_of_fifths_[] = {
            "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#",
         };
@@ -38,12 +45,14 @@ class Part {
             return -1; 
         }
 
+        std::string id_;            // identifier for piece this part belongs to, e.g. "BWV 10.1"
+        std::string partName_;      // name of part within the piece, e.g. "Soprano"     
+
         int beatsPerMeasure_ = 0;
         int divisionsPerBeat_ = 0;
         int key_ = 0;   // a negative number represents the number of flats in the key signature  
                         // a positive number represents the number of sharps in the key signature
         Mode mode_ = Mode::MAJOR;
-        std::string partName_;
 
         // line_ is a vector of words
         //  SOC: always the first word
@@ -59,7 +68,7 @@ class Part {
         std::vector<std::string> line_;
 
     public:
-        Part(const std::string partName) : partName_{partName} {}
+        Part(const std::string id, const std::string partName) : id_{id}, partName_{partName} {}
 
         // parse the MusicXML 'Part' element, set variables accordingly, 
         //  and return true if successful
@@ -68,6 +77,7 @@ class Part {
         bool transpose( int key = 0 ); 
 
         std::string get_partName() const { return partName_; }
+        std::string get_header() const;
         int get_beatsPerMeasure() const { return beatsPerMeasure_; }
         int get_divisionsPerBeat() const { return divisionsPerBeat_; }
         int get_key() const { return key_; }
@@ -75,16 +85,15 @@ class Part {
         std::vector<std::string> get_line() const { return line_; }
 
 
-        std::string key_to_string() const
-        {
-            return circle_of_fifths_[key_ + index_of_C() + (mode_ == Mode::MINOR ? 3 : 0)];
+        std::string key_to_string() const {
+            return circle_of_fifths_[key_ + index_of_C() + (mode_ == Mode::MINOR ? 3 : 0)] + "-" + mode_to_string();
         }
         std::string mode_to_string() const {
             return mode_ == Mode::MAJOR ? "Major" : "Minor";
         }
-        std::string line_to_string() const;
+        std::string to_string() const;
 
-        friend std::ostream& operator <<( std::ostream& os, const Part& part);
+        friend std::ostream& operator <<( std::ostream& os, const Part& part );
 
     private:
         // parse the MusicXML 'attributes' element, set variables accordingly

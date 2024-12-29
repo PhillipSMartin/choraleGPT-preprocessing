@@ -5,7 +5,7 @@
 
 class Chorale {
     private:
-        const char* xmlSource_;
+        std::string xmlSource_;
         tinyxml2::XMLDocument doc_;
         bool isXmlLoaded_ = false;
 
@@ -19,6 +19,7 @@ class Chorale {
         bool build_part_list();
 
         std::string get_title() const { return title_; }
+        std::string get_BWV() const;
         tinyxml2::XMLElement* get_part( const std::string partName ) const;
 
     private:

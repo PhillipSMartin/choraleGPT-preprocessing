@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tokenize",
-            "args": [ "data/106B.xml", "-s"],
+            "args": [ "data/106B.xml", "-satb"],
             // "args": [ "https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/000206B_.xml", "-satb"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

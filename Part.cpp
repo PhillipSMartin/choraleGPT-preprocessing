@@ -177,27 +177,24 @@ std::string Part::transpose_down( const std::string& word ) const {
     return transpose_note( word, downRules );
 }
 
-std::string Part::line_to_string() const {
-    return std::accumulate(line_.begin(), line_.end(), std::string{},
+std::string Part::get_header() const {
+    return ID + id_ +
+        PART + partName_ + 
+        KEY + key_to_string() + 
+        BEATS  + std::to_string( beatsPerMeasure_ ) +
+        SUB_BEATS + std::to_string( divisionsPerBeat_ ) +
+        EOH;
+}
+
+std::string Part::to_string() const {
+    return get_header() + std::accumulate(line_.begin(), line_.end(), std::string{},
         [this, it = line_.begin()](const std::string& acc, const std::string& word) mutable {
             return acc + word + (++it != line_.end() ? " " : "");
         });
 }
 
 std::ostream& operator <<( std::ostream& os, const Part& part) { 
-    os << part.partName_ << ": " 
-        << part.key_to_string() << " "
-        << part.mode_to_string() << " - "
-        << part.beatsPerMeasure_ << " beats per measure, ";
-
-    if (part.divisionsPerBeat_ > 1) {
-        os << part.divisionsPerBeat_ << " sub-divisions per beat\n";
-    }
-    else {
-        os << "not sub-divided\n";
-    }
-
-    os << part.line_to_string() << std::endl;
+    os << part.to_string() << std::endl;
     return os;
 }
 
