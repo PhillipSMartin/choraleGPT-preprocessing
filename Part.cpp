@@ -204,3 +204,11 @@ std::ostream& operator <<( std::ostream& os, const Part& part) {
     return os;
 }
 
+tinyxml2::XMLElement* Part::try_get_child( tinyxml2::XMLElement* parent, const char* childName ) {
+    tinyxml2::XMLElement* _xmlElement = XmlUtils::try_get_child( parent, childName );
+    if (!_xmlElement) { 
+        std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
+    }
+    return _xmlElement;
+}
+

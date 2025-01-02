@@ -13,9 +13,9 @@ using namespace XmlUtils;
 using namespace std::literals;
 
 bool Chorale::parse_title() {
-    XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", xmlSource_.c_str() );
+    XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", /* verbose =*/ false );
     if (_creditElement) {
-        XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words", xmlSource_.c_str() );
+        XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words", /* verbose =*/ false);
         if (_creditWordsElement)
             title_ = _creditWordsElement->GetText();
     }

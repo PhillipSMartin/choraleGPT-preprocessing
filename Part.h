@@ -103,9 +103,7 @@ class Part {
         // parse the MusicXML 'note' element, append words to line_ accordingly
         bool parse_note( tinyxml2::XMLElement* note );
 
-        tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName ) {
-            return XmlUtils::try_get_child( parent, childName, partName_.c_str() );
-        }
+        tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName );
 
         std::string transpose_up( const std::string& note ) const;
         std::string transpose_down( const std::string& note ) const;

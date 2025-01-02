@@ -4,13 +4,10 @@
 using namespace tinyxml2;
 
 namespace XmlUtils {
-    XMLElement* try_get_child( XMLElement* parent, const char* name, const char* context /* = nullptr */) {
+    XMLElement* try_get_child( XMLElement* parent, const char* name, bool verbose /* = true */ ) {
         XMLElement* child = parent ? parent->FirstChildElement( name ) : nullptr;
-        if (parent && !child) {
+        if (verbose && parent && !child) {
             std::cerr << "No " << name << " element found"; 
-            if (context) {
-                std::cerr << " for " << context;
-            }
             std::cerr << std::endl;
         }
 
