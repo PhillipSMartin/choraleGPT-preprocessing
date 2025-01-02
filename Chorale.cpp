@@ -1,4 +1,5 @@
 #include "Chorale.h"
+#include "Part.h"
 #include "XmlUtils.h"
 
 #include <cmath>
@@ -6,16 +7,15 @@
 #include <iostream>
 #include <ranges>
 #include <string_view>
-#include <vector>
 
 using namespace tinyxml2;
 using namespace XmlUtils;
 using namespace std::literals;
 
-bool Chorale::parse_chorale_data() {
-    XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit" );
+bool Chorale::parse_title() {
+    XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", xmlSource_.c_str() );
     if (_creditElement) {
-        XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words" );
+        XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words", xmlSource_.c_str() );
         if (_creditWordsElement)
             title_ = _creditWordsElement->GetText();
     }
@@ -23,19 +23,19 @@ bool Chorale::parse_chorale_data() {
     return true;
 }
 
-bool Chorale::load_from_file() { 
-    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource_.c_str() );
+bool Chorale::load_from_file( std::string xmlSource ) { 
+    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource.c_str() );
     if (!isXmlLoaded_) 
         return false;
 
-    return parse_chorale_data();
+    return parse_title();
 }
 
-bool Chorale::load_from_url() {
+bool Chorale::load_from_url( std::string xmlSource ) {
     CURL* curl = curl_easy_init();
     std::string buffer;
     
-    curl_easy_setopt(curl, CURLOPT_URL, xmlSource_);
+    curl_easy_setopt(curl, CURLOPT_URL, xmlSource.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
     
@@ -48,10 +48,16 @@ bool Chorale::load_from_url() {
     }
         
     isXmlLoaded_ = XmlUtils::load_from_buffer( doc_, buffer.c_str() );
-    if (!isXmlLoaded_) 
+    if (!isXmlLoaded_)  {
+        auto _rc = doc_.SaveFile("data/test.xml");
+        if (_rc != XML_SUCCESS) { 
+            std::cerr << "Failed to save XML file. Error=" << doc_.ErrorName() << std::endl; 
+            return false;
+        } 
         return false;
+    }
 
-    return parse_chorale_data();
+    return parse_title();
 }
 
 size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
@@ -113,5 +119,29 @@ std::string Chorale::get_BWV() const {
     auto _it = std::find(xmlSource_.rbegin(), xmlSource_.rend(), '/');
     unsigned int _bwv = std::stoi(xmlSource_.substr(std::distance(_it, xmlSource_.rend())));
     return "BWV "s + std::to_string( static_cast<int>( std::floor( _bwv / 100 ) ) ) + "."s + std::to_string(_bwv % 100);
+}
+
+std::vector<std::string> Chorale::encode_parts( const std::vector<std::string>& partsToParse )
+{
+    std::vector<std::string> _parts;
+
+    // Get part list
+    if (!build_part_list()) {
+        std::cerr << "Failed to build part list" << std::endl;
+        return _parts;
+    }
+
+    for (const std::string& _partName : partsToParse) {
+        Part _part{get_BWV(), _partName};
+        if (_part.parse_musicXml( get_part( _partName ) )) {
+            _part.transpose();
+            _parts.push_back( _part.to_string() );
+        }
+        else {
+            std::cerr << "Failed to parse part: " << _partName << std::endl;
+        }
+    }
+
+    return _parts;
 }
 

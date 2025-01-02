@@ -4,8 +4,10 @@
 class Arguments {
     public:
         enum XmlSourceType {
-            FILE,
-            URL
+            FILE,   // a music xml file on the local filesystem
+            URL,    // a music xml file obtainable via a url
+            TXT,     // a text file containing a list of music xml file names or urls
+            UNKNOWN
         };
 
     private:
@@ -20,6 +22,7 @@ class Arguments {
         args::Flag alto_{parser_, "Alto", "Parse the alto part", {'a', "alto"}};
         args::Flag tenor_{parser_, "Tenor", "Parse the tenor part", {'t', "tenor"}};
         args::Flag bass_{parser_, "Bass", "Parse the bass part", {'b', "bass"}};
+        args::ValueFlag<std::string> outputFile_{parser_, "output", "Output file path", {'f', "file"}};
 
         // Store references to flags in vector
         std::vector<std::reference_wrapper<args::Flag>> flags_ { 
@@ -29,13 +32,36 @@ class Arguments {
             bass_ 
         };
 
+        static std::string trim_leading_whitespace(const std::string& str) { 
+             auto it = std::find_if( str.begin(), str.end(), [](char ch) { 
+                return !std::isspace(static_cast<unsigned char>(ch)); 
+            } ); 
+            return std::string{it, str.end()};
+        }
+
     public:
         Arguments() {}
         bool parse_command_line(int argc, char** argv);
 
-        const char* get_xml_source() { return args::get( xmlSource_ ).c_str(); }
-        XmlSourceType get_xml_source_type() {
-            return (args::get( xmlSource_ ).find("http") == 0) ? URL : FILE;
+        std::string get_xml_source() { return args::get( xmlSource_ ); }
+        static XmlSourceType get_xml_source_type( std::string xmlSource ) {
+            if (xmlSource.find("http://") == 0 || xmlSource.find("https://") == 0) {
+                return Arguments::URL;
+            }
+            else if (xmlSource.find(".txt") != std::string::npos) {
+                return Arguments::TXT;
+            }
+            else  if (xmlSource.find(".xml") != std::string::npos) {
+                return Arguments::FILE;
+            }
+            else {
+                return Arguments::UNKNOWN;
+            }
         }
         std::vector<std::string> get_parts_to_parse();
+        bool has_output_file() const { return outputFile_.Matched(); }
+        std::string get_output_file() { 
+            return trim_leading_whitespace( args::get( outputFile_ ) );
+        }
+
 };

@@ -49,6 +49,7 @@
         "unordered_set": "cpp",
         "sstream": "cpp",
         "optional": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "fstream": "cpp"
     }
 }

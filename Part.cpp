@@ -1,6 +1,7 @@
 #include "Part.h"
 #include <iostream>
 #include <numeric>
+#include <sstream>
 
 using namespace tinyxml2;
 
@@ -144,11 +145,12 @@ std::string Part::transpose_note( const std::string& word, const std::map<char, 
         _alter += rule->second.alterChange;
     }
 
-    _word = std::string{ _pitch } + 
-        (_alter ? std::to_string( _alter ) : "") + "." 
-        + std::to_string( _octave ) + "." 
-        + std::to_string( _duration );
-    return _word;
+    std::ostringstream _os;
+    _os << _pitch;
+    if (_alter) 
+        _os << _alter;
+    _os << "." << _octave << "." << _duration;
+    return _os.str();
 }
 
 std::string Part::transpose_up( const std::string& word ) const {
@@ -187,10 +189,14 @@ std::string Part::get_header() const {
 }
 
 std::string Part::to_string() const {
-    return get_header() + std::accumulate(line_.begin(), line_.end(), std::string{},
-        [this, it = line_.begin()](const std::string& acc, const std::string& word) mutable {
-            return acc + word + (++it != line_.end() ? " " : "");
-        });
+    std::ostringstream _os;
+    _os << get_header();
+    
+    for (const auto& word : line_) {
+        _os << " ";
+        _os << word;
+    }
+    return _os.str();
 }
 
 std::ostream& operator <<( std::ostream& os, const Part& part) { 

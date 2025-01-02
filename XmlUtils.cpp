@@ -69,12 +69,6 @@ namespace XmlUtils {
             std::cerr << "Parsed document has no root element" << std::endl;
             return false;
         }
-    
-        rc = doc.SaveFile("data/test.xml");
-        if (rc != XML_SUCCESS) { 
-            std::cerr << "Failed to save XML file. Error=" << doc.ErrorName() << std::endl; 
-            return false;
-        } 
 
         XMLElement* _error = doc.FirstChildElement("Error");
         if (_error) {
