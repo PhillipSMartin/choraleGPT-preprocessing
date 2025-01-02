@@ -19,6 +19,8 @@ class Arguments {
 
         // Define optional switches
         args::Flag soprano_{parser_, "Soprano", "Parse the soprano part", {'s', "soprano"}};
+        args::Flag soprano1_{parser_, "Soprano 1", "Parse the soprano 1 part", {'1', "soprano1"}};
+        args::Flag soprano2_{parser_, "Soprano 2", "Parse the soprano 2 part", {'2', "soprano2"}};
         args::Flag alto_{parser_, "Alto", "Parse the alto part", {'a', "alto"}};
         args::Flag tenor_{parser_, "Tenor", "Parse the tenor part", {'t', "tenor"}};
         args::Flag bass_{parser_, "Bass", "Parse the bass part", {'b', "bass"}};
@@ -27,6 +29,8 @@ class Arguments {
         // Store references to flags in vector
         std::vector<std::reference_wrapper<args::Flag>> flags_ { 
             soprano_, 
+            soprano1_,
+            soprano2_,
             alto_, 
             tenor_, 
             bass_ 
