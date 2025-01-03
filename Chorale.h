@@ -6,6 +6,8 @@
 
 class Chorale {
     private:
+        static unsigned int lastBWV_;
+        static char lastModifier_;
         std::string xmlSource_;
         tinyxml2::XMLDocument doc_;
         bool isXmlLoaded_ = false;
@@ -15,8 +17,7 @@ class Chorale {
 
     public:
         Chorale( std::string xmlSource ) : xmlSource_( xmlSource ) {}
-        bool load_from_file( std::string xmlSource );
-        bool load_from_url( std::string xmlSource );
+        bool load();
         bool build_part_list();
 
         std::string get_title() const { return title_; }
@@ -25,6 +26,8 @@ class Chorale {
         std::vector<std::string> encode_parts( const std::vector<std::string>& partsToParse );
 
     private:
+        bool load_from_file( std::string xmlSource );
+        bool load_from_url( std::string xmlSource );
         static size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp);
-        bool parse_title();
+        void parse_title();
 };

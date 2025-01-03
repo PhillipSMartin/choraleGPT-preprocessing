@@ -9,9 +9,8 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/tokenize",
- //         "args": [ "data/106B.xml", "-satb", "-f data/output.txt"],
- //         "args": [ "data/106B.xml", "-satb"],
-            "args": [ "data/urls-five-parts.txt", "-12", "-f data/output.txt"],
+ //         "args": [ "data/files.txt", "-satb", "-f data/output.txt" ]
+            "args": [ "data/urls.txt", "-satb", "-f data/all-chorales-output.txt"],
  //           "args": [ "https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/000206B_.xml", "-satb", "-f data/output.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

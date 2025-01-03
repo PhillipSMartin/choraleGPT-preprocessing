@@ -21,7 +21,6 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002007B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002011B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002506B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002606B_.xml
-https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002706B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002806B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002908B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/003006B_.xml
@@ -168,7 +167,6 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/019707Ba.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/019710B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022602B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022701B_.xml
-https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022703B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022707B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022711B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022902B_.xml

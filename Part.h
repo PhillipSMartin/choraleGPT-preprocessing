@@ -6,6 +6,8 @@
 #include <tinyxml2.h>
 #include <vector>
 
+static inline const int MIN_SUBBEATS = 8;
+
 struct TranspositionRule {
     char newPitch;
     int octaveChange;
@@ -28,6 +30,7 @@ class Part {
         // header parameters
         static inline const std::string ID = "[ID: ";  
         static inline const std::string PART = ", PART: ";
+
         static inline const std::string KEY = ", KEY: ";
         static inline const std::string BEATS = ", BEATS: ";
         static inline const std::string SUB_BEATS = ", SUB-BEATS: ";
@@ -46,10 +49,11 @@ class Part {
         }
 
         std::string id_;            // identifier for piece this part belongs to, e.g. "BWV 10.1"
+        std::string title_;         // title of piece if provided, e.g. "Jesu, meine Freude"
         std::string partName_;      // name of part within the piece, e.g. "Soprano"     
 
         int beatsPerMeasure_ = 0;
-        int divisionsPerBeat_ = 0;
+        int subBeats_ = 0;
         int key_ = 0;   // a negative number represents the number of flats in the key signature  
                         // a positive number represents the number of sharps in the key signature
         Mode mode_ = Mode::MAJOR;
@@ -68,7 +72,7 @@ class Part {
         std::vector<std::string> line_;
 
     public:
-        Part(const std::string id, const std::string partName) : id_{id}, partName_{partName} {}
+        Part(const std::string id, const std::string title, const std::string partName) : id_{id}, title_{title}, partName_{partName} {}
 
         // parse the MusicXML 'Part' element, set variables accordingly, 
         //  and return true if successful
@@ -79,7 +83,7 @@ class Part {
         std::string get_partName() const { return partName_; }
         std::string get_header() const;
         int get_beatsPerMeasure() const { return beatsPerMeasure_; }
-        int get_divisionsPerBeat() const { return divisionsPerBeat_; }
+        int get_subBeats() const { return subBeats_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
         std::vector<std::string> get_line() const { return line_; }

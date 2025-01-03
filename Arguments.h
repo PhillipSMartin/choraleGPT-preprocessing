@@ -11,11 +11,14 @@ class Arguments {
         };
 
     private:
+        std::string xmlSource_; // the string passes by the positional argument xmlSourceParm_
+        std::string outputFile_; // the string passed by the optional argument outputFileParm_
+
         args::ArgumentParser parser_{"This program extracts parts from a music xml file", ""};
         args::HelpFlag help_{parser_, "help", "Display this help menu", {'h', "help"}};
 
         // Define positional argument
-        args::Positional<std::string> xmlSource_{parser_, "source", "The music xml file name or url to process"};
+        args::Positional<std::string> xmlSourceParm_{parser_, "source", "The music xml file name or url to process"};
 
         // Define optional switches
         args::Flag soprano_{parser_, "Soprano", "Parse the soprano part", {'s', "soprano"}};
@@ -24,7 +27,7 @@ class Arguments {
         args::Flag alto_{parser_, "Alto", "Parse the alto part", {'a', "alto"}};
         args::Flag tenor_{parser_, "Tenor", "Parse the tenor part", {'t', "tenor"}};
         args::Flag bass_{parser_, "Bass", "Parse the bass part", {'b', "bass"}};
-        args::ValueFlag<std::string> outputFile_{parser_, "output", "Output file path", {'f', "file"}};
+        args::ValueFlag<std::string> outputFileParm_{parser_, "output", "Output file path", {'f', "file"}};
 
         // Store references to flags in vector
         std::vector<std::reference_wrapper<args::Flag>> flags_ { 
@@ -47,8 +50,8 @@ class Arguments {
         Arguments() {}
         bool parse_command_line(int argc, char** argv);
 
-        std::string get_xml_source() { return args::get( xmlSource_ ); }
-        static XmlSourceType get_xml_source_type( std::string xmlSource ) {
+        std::string get_xml_source() const { return xmlSource_; }
+        static XmlSourceType get_xml_source_type( const std::string xmlSource ) {
             if (xmlSource.find("http://") == 0 || xmlSource.find("https://") == 0) {
                 return Arguments::URL;
             }
@@ -62,10 +65,7 @@ class Arguments {
                 return Arguments::UNKNOWN;
             }
         }
-        std::vector<std::string> get_parts_to_parse();
-        bool has_output_file() const { return outputFile_.Matched(); }
-        std::string get_output_file() { 
-            return trim_leading_whitespace( args::get( outputFile_ ) );
-        }
-
+        std::vector<std::string> get_parts_to_parse() const;
+        bool has_output_file() const { return outputFileParm_.Matched(); }
+        std::string get_output_file() const { return outputFile_; };
 };

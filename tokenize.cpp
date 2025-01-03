@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 
+// no parts for BWVs 41.6 140.7 171.6 253.0
+
 bool read_xml_source_list( const std::string& xmlSource, std::vector<std::string>& xmlSourceList ) {
     std::ifstream _xmlSourceListFile{xmlSource};
     if (!_xmlSourceListFile) {
@@ -21,79 +23,87 @@ bool read_xml_source_list( const std::string& xmlSource, std::vector<std::string
     return xmlSourceList.size() > 0;
 }
 
-int main( int argc, char** argv ) { 
-    Arguments args;
-    if (!args.parse_command_line(argc, argv)) {
-        return 1;
-    }
-
-    std::ofstream _outputFile;
-    if (args.has_output_file()) {
-        _outputFile.open(args.get_output_file(), std::ios::out);
-        if (!_outputFile) {
-            std::cerr << "Failed to open output file: " << args.get_output_file() << std::endl;
-            return 1;
-        }
-    }
-
-    // build list of music xml files to read
-    std::vector<std::string> _musicXmlSources;
+std::vector<std::string> get_xml_sources( const Arguments& args ) {
+    std::vector<std::string> _xmlSources;
     switch (args.get_xml_source_type( args.get_xml_source() )) {
 
         // if xml source is a txt file it contains a list of files or urls
         case Arguments::TXT:
-            if (!read_xml_source_list( args.get_xml_source(), _musicXmlSources )) {
-                return 1;
-            }
+            read_xml_source_list( args.get_xml_source(), _xmlSources );
             break;
 
         // otherwise, xml source is a single file or url
         default:
-           _musicXmlSources.push_back(args.get_xml_source());
+           _xmlSources.push_back(args.get_xml_source());
             break;
     }
+    return _xmlSources;
+}
 
+bool print_to_console( const Arguments& args, const std::vector<std::string>& xmlSources ) {
     // process each music xml source in list
-    for (const std::string& _musicXmlSource : _musicXmlSources) {
-
-        // Initialze Chorale
-        Chorale _chorale{_musicXmlSource};
-
-        bool _loaded = false;
-        switch (args.get_xml_source_type( _musicXmlSource )) {
-            case Arguments::FILE:
-                _loaded = _chorale.load_from_file( _musicXmlSource);
-                break;
-            case Arguments::URL:
-                _loaded = _chorale.load_from_url( _musicXmlSource );
-                break;
-            default:
-                std::cerr << "Invalid xml source type: " << _musicXmlSource << std::endl;
-                break;
-        }
-        if (!_loaded) {
+    for (const std::string& _xmlSource : xmlSources) {
+        Chorale _chorale{_xmlSource};
+        if (!_chorale.load()) {
+            std::cerr << "Failed to load xml source: " << _xmlSource << std::endl;
             return 1;
         }
 
-        if (args.has_output_file()) {
-            for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
-                _outputFile << _part << '\n';
-            }
+        for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
+            std::cout << _part << "\n\n";
+        } 
+    }        
+
+    std::cout << std::endl;
+    return true;
+}
+
+bool export_to_file( const Arguments& args, const std::vector<std::string>& xmlSources ) {
+    std::ofstream _outputFile{args.get_output_file(), std::ios::out};
+    if (!_outputFile) {
+        std::cerr << "Failed to open output file: " << args.get_output_file() << std::endl;
+        return false;
+    }
+
+    // process each music xml source in list
+    for (const std::string& _xmlSource : xmlSources) {
+        Chorale _chorale{_xmlSource};
+        if (!_chorale.load()) {
+            std::cerr << "Failed to load xml source: " << _xmlSource << std::endl;
+            return false;
         }
 
-        else {
-            std::cout << _chorale.get_title() << '\n' << std::endl;
-            for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
-                std::cout << _part << "\n\n";
-            }      
+        for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
+            _outputFile << _part << '\n';
         }
+    }
+
+    _outputFile.close();
+    return true;
+}
+
+int main( int argc, char** argv ) { 
+    Arguments args;
+    if (!args.parse_command_line( argc, argv )) {
+        return 1;
+    }
+
+    // build list of music xml files to read
+    std::vector<std::string> _xmlSources = get_xml_sources( args );
+    if (_xmlSources.empty()) {
+        std::cerr << "No music xml sources to process" << std::endl;
+        return 1;
     }
 
     if (args.has_output_file()) {
-        _outputFile.close();
+        if (!export_to_file( args, _xmlSources )) {
+            return 1;
+        }
     }
     else {
-        std::cout << std::endl;
+        if (!print_to_console( args, _xmlSources )) {
+            return 1;
+        }
     }
 
     return 0;

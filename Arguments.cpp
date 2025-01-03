@@ -4,6 +4,8 @@ bool Arguments::parse_command_line(int argc, char** argv)
 {
     try {
         parser_.ParseCLI(argc, argv);
+        xmlSource_ = args::get( xmlSourceParm_ );
+        outputFile_ = trim_leading_whitespace( args::get( outputFileParm_ ) );
     } 
     catch (args::Help&) {
         std::cout << parser_;
@@ -23,7 +25,7 @@ bool Arguments::parse_command_line(int argc, char** argv)
     return true;
 }
 
-std::vector<std::string> Arguments::get_parts_to_parse()
+std::vector<std::string> Arguments::get_parts_to_parse() const
 {
     // Build vector of selected parts
     std::vector<std::string> _selectedParts;

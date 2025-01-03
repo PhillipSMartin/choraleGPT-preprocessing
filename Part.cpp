@@ -56,7 +56,7 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 
     XMLElement* divisions = try_get_child( attributes, "divisions" );
     if (divisions) {
-        divisionsPerBeat_ = atoi( divisions->GetText() );
+        subBeats_ = atoi( divisions->GetText() );
     }
 
     return fifths && mode && beats && divisions;
@@ -74,11 +74,11 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
 
 bool Part::parse_note( tinyxml2::XMLElement* note ) {
     std::string _word{};
-    XMLElement* pitch = note ? note->FirstChildElement( "pitch" ) : nullptr;
-    if (pitch) {
-        XMLElement* step = try_get_child( pitch, "step" );
-        XMLElement* alter = pitch->FirstChildElement( "alter" );
-        XMLElement* octave = try_get_child( pitch, "octave" );
+    XMLElement* _pitch = note ? note->FirstChildElement( "pitch" ) : nullptr;
+    if (_pitch) {
+        XMLElement* step = try_get_child( _pitch, "step" );
+        XMLElement* alter = _pitch->FirstChildElement( "alter" );
+        XMLElement* octave = try_get_child( _pitch, "octave" );
         if (step && octave) {
             _word.append( step->GetText() );
             _word.append( alter ? alter->GetText() : "" );
@@ -88,19 +88,20 @@ bool Part::parse_note( tinyxml2::XMLElement* note ) {
         }
     }
     else {
-        pitch = note ? note->FirstChildElement( "rest" ) : nullptr;
-        if (pitch) {
+        _pitch = note ? note->FirstChildElement( "rest" ) : nullptr;
+        if (_pitch) {
             _word.append( "R.0." );
         }
     }
 
-    XMLElement* duration = try_get_child( note, "duration" );
-    if (duration) {
-        _word.append( duration->GetText() );
+    XMLElement* _duration = try_get_child( note, "duration" );
+    if (_duration) {
+        int _beats = atoi( _duration->GetText() ) * MIN_SUBBEATS / subBeats_;
+        _word.append( std::to_string( _beats ) );
     }
 
     line_.push_back( _word );
-    return pitch && duration;
+    return _pitch && _duration;
 }
 
 bool Part::transpose( int key ) {
@@ -184,7 +185,7 @@ std::string Part::get_header() const {
         PART + partName_ + 
         KEY + key_to_string() + 
         BEATS  + std::to_string( beatsPerMeasure_ ) +
-        SUB_BEATS + std::to_string( divisionsPerBeat_ ) +
+        SUB_BEATS + std::to_string( MIN_SUBBEATS ) +
         EOH;
 }
 

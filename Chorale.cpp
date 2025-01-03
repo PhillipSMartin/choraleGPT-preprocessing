@@ -1,3 +1,4 @@
+#include "Arguments.h"
 #include "Chorale.h"
 #include "Part.h"
 #include "XmlUtils.h"
@@ -6,29 +7,47 @@
 #include <curl/curl.h>
 #include <iostream>
 #include <ranges>
+#include <sstream>
 #include <string_view>
 
 using namespace tinyxml2;
 using namespace XmlUtils;
 using namespace std::literals;
 
-bool Chorale::parse_title() {
+unsigned int Chorale::lastBWV_{0};
+char Chorale::lastModifier_{'`'};
+
+void Chorale::parse_title() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", /* verbose =*/ false );
     if (_creditElement) {
         XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words", /* verbose =*/ false);
         if (_creditWordsElement)
             title_ = _creditWordsElement->GetText();
     }
+}
 
-    return true;
+bool Chorale::load() {
+    isXmlLoaded_ = false;
+    switch (Arguments::get_xml_source_type( xmlSource_ )) {
+        case Arguments::FILE:
+            isXmlLoaded_ = load_from_file( xmlSource_ );
+            break;
+        case Arguments::URL:
+            isXmlLoaded_ = load_from_url( xmlSource_ );
+            break;
+        default:
+            std::cerr << "Invalid xml source type: " << xmlSource_ << std::endl;
+            break;
+    }
+
+    if (isXmlLoaded_) {
+        parse_title();
+    }
+    return isXmlLoaded_;
 }
 
 bool Chorale::load_from_file( std::string xmlSource ) { 
-    isXmlLoaded_ = XmlUtils::load_from_file( doc_, xmlSource.c_str() );
-    if (!isXmlLoaded_) 
-        return false;
-
-    return parse_title();
+    return XmlUtils::load_from_file( doc_, xmlSource.c_str() );
 }
 
 bool Chorale::load_from_url( std::string xmlSource ) {
@@ -47,17 +66,7 @@ bool Chorale::load_from_url( std::string xmlSource ) {
         return false;
     }
         
-    isXmlLoaded_ = XmlUtils::load_from_buffer( doc_, buffer.c_str() );
-    if (!isXmlLoaded_)  {
-        auto _rc = doc_.SaveFile("data/test.xml");
-        if (_rc != XML_SUCCESS) { 
-            std::cerr << "Failed to save XML file. Error=" << doc_.ErrorName() << std::endl; 
-            return false;
-        } 
-        return false;
-    }
-
-    return parse_title();
+    return XmlUtils::load_from_buffer( doc_, buffer.c_str() );
 }
 
 size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
@@ -118,7 +127,23 @@ tinyxml2::XMLElement* Chorale::get_part( const std::string partName ) const {
 std::string Chorale::get_BWV() const {
     auto _it = std::find(xmlSource_.rbegin(), xmlSource_.rend(), '/');
     unsigned int _bwv = std::stoi(xmlSource_.substr(std::distance(_it, xmlSource_.rend())));
-    return "BWV "s + std::to_string( static_cast<int>( std::floor( _bwv / 100 ) ) ) + "."s + std::to_string(_bwv % 100);
+    std::ostringstream _bwvStream;
+
+    // last two digits of bwv are a sub-group
+    _bwvStream << "BWV "
+                << static_cast<int>( std::floor( _bwv / 100 ) )
+                << '.' 
+                << _bwv % 100;
+
+    // if we have already done this bwv, we must add a modifier character to the end
+    if (_bwv == lastBWV_) {
+        _bwvStream << ++lastModifier_;
+    }
+    else {
+        lastBWV_ = _bwv;
+        lastModifier_ = '`';
+    }
+    return _bwvStream.str();
 }
 
 std::vector<std::string> Chorale::encode_parts( const std::vector<std::string>& partsToParse )
@@ -131,14 +156,15 @@ std::vector<std::string> Chorale::encode_parts( const std::vector<std::string>& 
         return _parts;
     }
 
+    std::string _bwv{ get_BWV() };
     for (const std::string& _partName : partsToParse) {
-        Part _part{get_BWV(), _partName};
+        Part _part{_bwv, title_, _partName};
         if (_part.parse_musicXml( get_part( _partName ) )) {
             _part.transpose();
             _parts.push_back( _part.to_string() );
         }
         else {
-            std::cerr << "Failed to parse part: " << _partName << std::endl;
+            std::cerr << "Failed to parse part: " << _partName << " for " << _bwv << std::endl;
         }
     }
 
