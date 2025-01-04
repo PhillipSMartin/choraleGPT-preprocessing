@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/inputXml",
-            "args": ["../data/files.txt", "-satb", "-f", "../data/output.txt"],
+            "args": ["../data/files.txt", "-satb", "-f", "../outputs/output.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],

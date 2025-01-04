@@ -44,13 +44,19 @@ bool print_to_console( const Arguments& args, const std::vector<std::string>& xm
     // process each music xml source in list
     for (const std::string& _xmlSource : xmlSources) {
         Chorale _chorale{_xmlSource};
-        if (!_chorale.load()) {
+        if (!_chorale.load_xml()) {
             std::cerr << "Failed to load xml source: " << _xmlSource << std::endl;
             return 1;
         }
 
-        for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
-            std::cout << _part << "\n\n";
+        if (_chorale.build_endcoded_parts( args.get_parts_to_parse() )) {
+            for (std::string _part : args.get_parts_to_parse() ) {
+                std::cout << _chorale.get_encoded_part( _part ) << "\n\n";
+            }
+        }
+        else {
+            std::cerr << "Failed to encode parts for BWV " << _chorale.get_BWV() << std::endl;
+            return 1;
         } 
     }        
 
@@ -68,14 +74,20 @@ bool export_to_file( const Arguments& args, const std::vector<std::string>& xmlS
     // process each music xml source in list
     for (const std::string& _xmlSource : xmlSources) {
         Chorale _chorale{_xmlSource};
-        if (!_chorale.load()) {
+        if (!_chorale.load_xml()) {
             std::cerr << "Failed to load xml source: " << _xmlSource << std::endl;
             return false;
         }
 
-        for (std::string _part : _chorale.encode_parts( args.get_parts_to_parse() ) ) {
-            _outputFile << _part << '\n';
+        if (_chorale.build_endcoded_parts( args.get_parts_to_parse() )) {
+            for (std::string _part : args.get_parts_to_parse() ) {
+                _outputFile << _chorale.get_encoded_part( _part ) << '\n';
+            }
         }
+        else {
+            std::cerr << "Failed to encode parts for BWV " << _chorale.get_BWV() << std::endl;
+            return 1;
+        } 
     }
 
     _outputFile.close();

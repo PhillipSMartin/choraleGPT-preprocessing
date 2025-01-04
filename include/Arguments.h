@@ -51,7 +51,7 @@ class Arguments {
         bool parse_command_line(int argc, char** argv);
 
         std::string get_xml_source() const { return xmlSource_; }
-        static XmlSourceType get_xml_source_type( const std::string xmlSource ) {
+        static XmlSourceType get_xml_source_type( const std::string& xmlSource ) {
             if (xmlSource.find("http://") == 0 || xmlSource.find("https://") == 0) {
                 return Arguments::URL;
             }

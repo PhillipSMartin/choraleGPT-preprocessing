@@ -72,7 +72,7 @@ class Part {
         std::vector<std::string> line_;
 
     public:
-        Part(const std::string id, const std::string title, const std::string partName) : id_{id}, title_{title}, partName_{partName} {}
+        Part(const std::string& id, const std::string& title, const std::string& partName) : id_{id}, title_{title}, partName_{partName} {}
 
         // parse the MusicXML 'Part' element, set variables accordingly, 
         //  and return true if successful
