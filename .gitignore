@@ -1,1 +1,23 @@
-tokenize
+# Build directories
+build/
+bin/
+
+# IDE specific
+.vscode/ipch/
+.vs/
+
+# Compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+*.cmake
+Makefile
+
+# System files
+.DS_Store
