@@ -2,24 +2,24 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build inputXml",
+            "label": "Build All",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build . --target inputXml",
+            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build .",
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "Build All",
+            "label": "Build inputXml",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build .",
+            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build . --target inputXml",
             "group": "build"
         },
         {
-            "label": "Build Future-Executable",
+            "label": "Build inputEncodings",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build . --target future-executable",
+            "command": "cd ${workspaceFolder}/build && cmake .. && cmake --build . --target inputEncodings",
             "group": "build"
         }		
 	]

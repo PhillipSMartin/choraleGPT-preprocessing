@@ -4,7 +4,7 @@ bool Arguments::parse_command_line(int argc, char** argv)
 {
     try {
         parser_.ParseCLI(argc, argv);
-        xmlSource_ = args::get( xmlSourceParm_ );
+        inputSource_ = args::get( inputSourceParm_ );
         outputFile_ = trim_leading_whitespace( args::get( outputFileParm_ ) );
     } 
     catch (args::Help&) {

@@ -28,7 +28,7 @@ void Chorale::parse_title_from_xml() {
 
 bool Chorale::load_xml() {
     isXmlLoaded_ = false;
-    switch (Arguments::get_xml_source_type( xmlSource_ )) {
+    switch (Arguments::get_input_source_type( xmlSource_ )) {
         case Arguments::FILE:
             isXmlLoaded_ = load_xml_from_file( xmlSource_ );
             break;

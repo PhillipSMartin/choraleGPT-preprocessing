@@ -5,6 +5,26 @@
     "version": "0.2.0",
     "configurations": [       
         {
+            "name": "Debug inputEncodings",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/inputEncodings",
+            "args": ["../outputs/all-chorales-output.txt"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/bin",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build inputEncodings"
+        },
+        {
             "name": "Debug inputXml",
             "type": "cppdbg",
             "request": "launch",

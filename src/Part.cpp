@@ -181,11 +181,11 @@ std::string Part::transpose_down( const std::string& word ) const {
 }
 
 std::string Part::get_header() const {
-    return ID + id_ +
-        PART + partName_ + 
-        KEY + key_to_string() + 
-        BEATS  + std::to_string( beatsPerMeasure_ ) +
-        SUB_BEATS + std::to_string( MIN_SUBBEATS ) +
+    return SOH + ID + id_ +
+        DELIM + PART + partName_ + 
+        DELIM + KEY + key_to_string() + 
+        DELIM + BEATS  + std::to_string( beatsPerMeasure_ ) +
+        DELIM + SUB_BEATS + std::to_string( MIN_SUBBEATS ) +
         EOH;
 }
 
@@ -211,5 +211,39 @@ tinyxml2::XMLElement* Part::try_get_child( tinyxml2::XMLElement* parent, const c
         std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
     }
     return _xmlElement;
+}
+
+bool Part::parse_encoding( const std::string& part ) {
+    auto _it = part.find(EOH);
+    if (_it == std::string::npos) {
+        std::cerr << "No header found. Line = " << part;
+        return false;
+    }
+
+    if (!import_header( part.substr( 0, _it + 1 ))) {
+        return false;
+    }
+    return import_line( part.substr( _it + 1 ) );
+}
+
+bool Part::import_header( const std::string& header ) {
+    auto _it = header.find( ID );
+    if (_it == std::string::npos) {
+        std::cerr << "No ID found. Header = " << header;
+        return false;
+    }
+    int _cursor = _it + ID.length();
+    auto _delim = header.find_first_of( ",]", _cursor );
+    id_ = header.substr( _cursor, _delim - _cursor);
+
+    return true;
+}
+
+bool Part::import_line( const std::string& line ) {
+    std::istringstream _is{ line };
+    std::string _word1, _word2;
+    _is >> _word1 >> _word2;
+    std::cout << "word1:" << _word1 << ", word2:" << _word2 << std::endl;
+    return true;
 }
 

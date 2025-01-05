@@ -25,16 +25,16 @@ bool read_xml_source_list( const std::string& xmlSource, std::vector<std::string
 
 std::vector<std::string> get_xml_sources( const Arguments& args ) {
     std::vector<std::string> _xmlSources;
-    switch (args.get_xml_source_type( args.get_xml_source() )) {
+    switch (args.get_input_source_type( args.get_input_source() )) {
 
         // if xml source is a txt file it contains a list of files or urls
         case Arguments::TXT:
-            read_xml_source_list( args.get_xml_source(), _xmlSources );
+            read_xml_source_list( args.get_input_source(), _xmlSources );
             break;
 
         // otherwise, xml source is a single file or url
         default:
-           _xmlSources.push_back(args.get_xml_source());
+           _xmlSources.push_back(args.get_input_source());
             break;
     }
     return _xmlSources;

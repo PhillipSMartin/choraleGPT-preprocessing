@@ -11,14 +11,14 @@ class Arguments {
         };
 
     private:
-        std::string xmlSource_; // the string passes by the positional argument xmlSourceParm_
+        std::string inputSource_; // the string passed by the positional argument inputSourceParm_
         std::string outputFile_; // the string passed by the optional argument outputFileParm_
 
         args::ArgumentParser parser_{"This program extracts parts from a music xml file", ""};
         args::HelpFlag help_{parser_, "help", "Display this help menu", {'h', "help"}};
 
         // Define positional argument
-        args::Positional<std::string> xmlSourceParm_{parser_, "source", "The music xml file name or url to process"};
+        args::Positional<std::string> inputSourceParm_{parser_, "source", "The file name or url to process"};
 
         // Define optional switches
         args::Flag soprano_{parser_, "Soprano", "Parse the soprano part", {'s', "soprano"}};
@@ -50,8 +50,8 @@ class Arguments {
         Arguments() {}
         bool parse_command_line(int argc, char** argv);
 
-        std::string get_xml_source() const { return xmlSource_; }
-        static XmlSourceType get_xml_source_type( const std::string& xmlSource ) {
+        std::string get_input_source() const { return inputSource_; }
+        static XmlSourceType get_input_source_type( const std::string& xmlSource ) {
             if (xmlSource.find("http://") == 0 || xmlSource.find("https://") == 0) {
                 return Arguments::URL;
             }
