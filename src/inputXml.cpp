@@ -49,9 +49,15 @@ bool print_to_console( const Arguments& args, const std::vector<std::string>& xm
             return 1;
         }
 
-        if (_chorale.build_endcoded_parts( args.get_parts_to_parse() )) {
+        if (_chorale.encode_parts( args.get_parts_to_parse() )) {
             for (std::string _part : args.get_parts_to_parse() ) {
-                std::cout << _chorale.get_encoded_part( _part ) << "\n\n";
+                if (auto part = _chorale.get_encoded_part( _part )) {
+                    std::cout << part.value().get() << "\n\n";
+                }
+                else {
+                    std::cerr << "Part " << _part << " not found for BWV " << _chorale.get_BWV() << std::endl;
+                    return 1;
+                }
             }
         }
         else {
@@ -79,9 +85,15 @@ bool export_to_file( const Arguments& args, const std::vector<std::string>& xmlS
             return false;
         }
 
-        if (_chorale.build_endcoded_parts( args.get_parts_to_parse() )) {
+        if (_chorale.encode_parts( args.get_parts_to_parse() )) {
             for (std::string _part : args.get_parts_to_parse() ) {
-                _outputFile << _chorale.get_encoded_part( _part ) << '\n';
+                if (auto part = _chorale.get_encoded_part( _part )) {
+                    _outputFile << part.value().get() << '\n';
+                }
+                else {
+                    std::cerr << "Part " << _part << " not found for BWV " << _chorale.get_BWV() << std::endl;
+                    return 1;
+                }
             }
         }
         else {

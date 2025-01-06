@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Encoding.h"
+#include "TranspositionRule.h"
 #include "XmlUtils.h"
+
 #include <map>
 #include <string>
 #include <tinyxml2.h>
@@ -9,16 +12,6 @@
 // if sub_beats in the musicXml is less than this, we will multiply all durations to increase it to this value
 static inline const int MIN_SUBBEATS = 8;   
 
-// rule for transposing current key to a new key in the circle of fifths 
-// for example, to transpose B to a key with one extra sharp, we apply the rule {'F', 0, 1},
-//   meaning, we change B to F, keep the same octave, and add an alteration (e.g., flat to natural or
-//   natural to sharp)
-struct TranspositionRule {
-    char newPitch;      // the pitch we change to
-    int octaveChange;   // the increment in the octave
-    int alterChange;    // the increment in the the accidental
-};
-
 // class containing info about a single voice part
 class Part {
     public:
@@ -26,12 +19,6 @@ class Part {
             MAJOR,
             MINOR
         };
-
-        // special tokens for encoding
-        static inline const std::string SOC = "[SOC]";  // start of chorale
-        static inline const std::string EOM = "[EOM]";  // end of measure
-        static inline const std::string EOP = "[EOP]";  // end of phrase
-        static inline const std::string EOC = "[EOC]";  // end of chorale
 
         // parameters for the header of the encoding
         static inline const std::string SOH = "[";
@@ -78,14 +65,14 @@ class Part {
         //  SOC: always the first word
         //  a note is presented in the format <pitch>.<octave>.<duration>
         //      <pitch> consists of a capital letter (A-G) or 'R' to indicate a rest,
-        //          optionally followed by +1, +2, -1, or -2, indicating the number
+        //          optionally followed by 1, 2, -1, or -2, indicating the number
         //          of half-steps above or below the given note
         //      <octave> is always 0 for a rest
         //      <duration> is a number indicating the number of subbeats the note or rest is held
         //  EOM: end of measure 
         //  EOP: end of phrase (follows EOM if a phrase ends at a measure)
         //  EOC: always the last word
-        std::vector<std::string> line_;
+        std::vector<Encoding> line_;
 
     public:
         Part() = default;
@@ -94,7 +81,7 @@ class Part {
         // these methods print an error to cerr and return false if they faile
 
         // parse the MusicXML 'Part' element  
-        bool parse_musicXml( tinyxml2::XMLElement* part );
+        bool parse_xml( tinyxml2::XMLElement* part );
         // parse the encoding (performed on the musicXml in a previous run) 
         bool parse_encoding( const std::string& part );
         // transpose part to the key with given number of sharps (if plus) or flats (if minus)
@@ -107,7 +94,7 @@ class Part {
         int get_subBeats() const { return subBeats_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
-        std::vector<std::string> get_line() const { return line_; }
+        std::vector<Encoding> get_line() const { return line_; }
 
         // conversions to facillitate printing
         std::string key_to_string() const {
@@ -129,10 +116,8 @@ class Part {
         bool parse_attributes( tinyxml2::XMLElement* attributes );
         // parse the MusicXML 'measure' element, append words to line_ accordingly
         bool parse_measure( tinyxml2::XMLElement* measure );
-        // parse the MusicXML 'note' element, append words to line_ accordingly
-        bool parse_note( tinyxml2::XMLElement* note );
 
-        // returns the specified child of a givent XML element or nullptr
+        // returns the specified child of a given XML element or nullptr
         tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName );
 
         // helper functions for parse_encoding
@@ -144,9 +129,11 @@ class Part {
         // helper functions for transpose function
 
         // transpose to a key one level higher in the circle of fifths
-        std::string transpose_up( const std::string& note ) const;
+        void transpose_up( Note& note ) {
+            note.transpose( transposeUpRules );
+        }
         // transpose to a key one level lower in the circle of fifths
-        std::string transpose_down( const std::string& note ) const;
-        // transpose a single note according to the specified rule
-        std::string transpose_note( const std::string& word, const std::map<char, TranspositionRule>& rules ) const;
+        void transpose_down( Note& note ) {
+            note.transpose( transposeDownRules );
+        }
 };

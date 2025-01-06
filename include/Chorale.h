@@ -1,6 +1,9 @@
 #pragma once
+#include "Part.h"
 #include "XmlUtils.h"
+
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -14,18 +17,18 @@ class Chorale {
 
         std::string title_;
         std::map<std::string, tinyxml2::XMLElement*> xmlParts_;
-        std::map<std::string, std::string> encodedParts_;
+        std::map<std::string, Part> encodedParts_;
 
     public:
         Chorale( const std::string& xmlSource ) : xmlSource_( xmlSource ) {}
         bool load_xml();
         bool build_xml_parts();
-        bool build_endcoded_parts( const std::vector<std::string>& partsToParse );
+        bool encode_parts( const std::vector<std::string>& partsToParse );
 
         std::string get_title() const { return title_; }
         std::string get_BWV() const;
         tinyxml2::XMLElement* get_xml_part( const std::string& partName ) const;
-        std::string get_encoded_part( const std::string& partName ) const;
+        std::optional<std::reference_wrapper<Part>> get_encoded_part( const std::string& partName );
  
     private:
         bool load_xml_from_file( const std::string& xmlSource );

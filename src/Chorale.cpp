@@ -147,7 +147,7 @@ std::string Chorale::get_BWV() const {
     return _bwvStream.str();
 }
 
-bool Chorale::build_endcoded_parts( const std::vector<std::string>& partsToParse )
+bool Chorale::encode_parts( const std::vector<std::string>& partsToParse )
 {
     encodedParts_.clear();
 
@@ -161,22 +161,30 @@ bool Chorale::build_endcoded_parts( const std::vector<std::string>& partsToParse
 
     std::string _bwv{ get_BWV() };
     for (const std::string& _partName : partsToParse) {
-        Part _part{_bwv, title_, _partName};
-        if (_part.parse_musicXml( get_xml_part( _partName ) )) {
+        encodedParts_.emplace(std::piecewise_construct,
+                     std::forward_as_tuple(_partName),
+                     std::forward_as_tuple(_bwv, title_, _partName));
+        Part& _part = encodedParts_[_partName];
+        if (_part.parse_xml( get_xml_part( _partName ) )) {
             _part.transpose();
-            encodedParts_[_partName] = _part.to_string();
         }
         else {
             std::cerr << "Failed to parse part: " << _partName << " for " << _bwv << std::endl;
+            return false;
         }
     }
 
-    return encodedParts_.size() == partsToParse.size();
+    return true;
 }
 
-std::string Chorale::get_encoded_part(const std::string& partName) const {
-    auto it = encodedParts_.find(partName);
-    return (it != encodedParts_.end()) ? it->second : "";
+std::optional<std::reference_wrapper<Part>> Chorale::get_encoded_part(const std::string& partName) {
+    auto it = encodedParts_.find( partName );
+    if (it == encodedParts_.end()) {
+        return std::nullopt;
+    }
+    else {
+        return std::reference_wrapper<Part>( it->second );
+    }
 }
 
 
