@@ -3,7 +3,6 @@
 #include "XmlUtils.h"
 
 #include <map>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -35,7 +34,7 @@ class Chorale {
         std::string get_BWV() const { return bwv_; }
         std::string get_title() const { return title_; }
         tinyxml2::XMLElement* get_part_xml( const std::string& partName ) const;
-        std::optional<std::reference_wrapper<Part>> get_part( const std::string& partName );
+        Part* get_part( const std::string& partName );
  
     private:
         bool load_xml_from_file( const std::string& xmlSource );

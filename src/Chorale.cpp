@@ -217,13 +217,13 @@ bool Chorale::encode_parts()
     return true;
 }
 
-std::optional<std::reference_wrapper<Part>> Chorale::get_part(const std::string& partName) {
-    auto it = parts_.find( partName );
-    if (it == parts_.end()) {
-        return std::nullopt;
+Part* Chorale::get_part(const std::string& partName) {
+    auto _it = parts_.find( partName );
+    if (_it == parts_.end()) {
+        return nullptr;
     }
     else {
-        return std::reference_wrapper<Part>( it->second );
+        return &_it->second;
     }
 }
 
