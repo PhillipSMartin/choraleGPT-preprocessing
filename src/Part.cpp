@@ -73,7 +73,6 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
             std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
             return false;
         }
-        line_.back().set_duration( line_.back().get_duration() * MIN_SUBBEATS / subBeats_ );
         _note = _note->NextSiblingElement( "note" );
     }
     return true;
@@ -100,13 +99,21 @@ bool Part::transpose( int key ) {
     }
     return true;
 }
+
+ void Part::set_sub_beats( unsigned int subBeats ) {
+    unsigned int _oldSubBeats{ subBeats };
+    for (Encoding& _encoding : line_) {
+        _encoding.set_duration( _encoding.get_duration() * subBeats / _oldSubBeats );
+    }
+ }
+
 std::string Part::get_header() const {
     std::ostringstream _os;
     _os << SOH << ID << id_ 
         << DELIM << PART << partName_  
         << DELIM << KEY + key_to_string() 
         << DELIM << BEATS  << beatsPerMeasure_ 
-        << DELIM << SUB_BEATS << MIN_SUBBEATS
+        << DELIM << SUB_BEATS << subBeats_
         << EOH;
     return _os.str();
 }

@@ -76,14 +76,24 @@ size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* u
     return realsize;
 }
 
-bool Chorale::build_xml_parts() {
+bool Chorale::load_part_xmls() {
     if (!isXmlLoaded_) {
          std::cerr << "XML file not loaded" << std::endl;
          return false;
     }
 
     // map part ids to part names
-    xmlParts_.clear();
+    // xml sample:
+    //    <part-list>
+    //         ...
+    //         <score-part id="P1">
+    //             <part-name>Soprano</part-name>
+    //              ...
+    //         </score-part>
+    //         ...
+    //    </part-list>
+
+    partXmls_.clear();
     std::map<std::string, std::string> _partIds;
     XMLElement* _partListElement = XmlUtils::try_get_child( doc_.RootElement(), "part-list" );
     if (_partListElement) {
@@ -103,6 +113,15 @@ bool Chorale::build_xml_parts() {
         }
     }
 
+    // get the parts themselves
+    // xml sample
+    //  <part id="P1">
+    //     <measure implicit="yes" number="0">
+    //     ...
+    //     </measure>
+    //     ...
+    //  </part>
+
     XMLElement* _partElement = try_get_child( doc_.RootElement(), "part");
     if (!_partElement)
         return false;
@@ -114,15 +133,17 @@ bool Chorale::build_xml_parts() {
             std::cerr << "Part id not found in part_list: " << _partElement->Attribute( "id" ) << std::endl;
             return false;
         }
-        xmlParts_[ _it->second ] = _partElement;
+
+        // save it in dictionary, keyed by part name
+        partXmls_[ _it->second ] = _partElement;
         _partElement = _partElement->NextSiblingElement("part");
     }
     return true;
 }
 
-tinyxml2::XMLElement* Chorale::get_xml_part( const std::string& partName ) const { 
-    auto it = xmlParts_.find(partName);
-    return (it != xmlParts_.end()) ? it->second : nullptr;
+tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const { 
+    auto it = partXmls_.find(partName);
+    return (it != partXmls_.end()) ? it->second : nullptr;
 }
 
 std::string Chorale::get_BWV() const {
@@ -147,29 +168,47 @@ std::string Chorale::get_BWV() const {
     return _bwvStream.str();
 }
 
-bool Chorale::encode_parts( const std::vector<std::string>& partsToParse )
-{
-    encodedParts_.clear();
+void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
+    parts_.clear();
 
-    // Get part list
-    if (xmlParts_.empty()) {
-        if (!build_xml_parts()) {
+    // get each requested part name
+    for (const std::string& _partName : partsToParse) {
+
+        // instantiate a Part object and store it in a dictionary, keyed by part name
+        parts_.emplace(std::piecewise_construct,
+            std::forward_as_tuple(_partName), // std::string
+            std::forward_as_tuple(get_BWV(), title_, _partName)); // Part
+    }
+}
+
+bool Chorale::encode_parts()
+{
+    // load part xmls
+    if (partXmls_.empty()) {
+        if (!load_part_xmls()) {
             std::cerr << "Failed to build part list" << std::endl;
             return false;
         }
-    }
+    }  
 
-    std::string _bwv{ get_BWV() };
-    for (const std::string& _partName : partsToParse) {
-        encodedParts_.emplace(std::piecewise_construct,
-                     std::forward_as_tuple(_partName),
-                     std::forward_as_tuple(_bwv, title_, _partName));
-        Part& _part = encodedParts_[_partName];
-        if (_part.parse_xml( get_xml_part( _partName ) )) {
+    for (auto _it : parts_) {
+        // retrieve xml for this part
+        Part& _part = _it.second;
+        XMLElement* _partXml = get_part_xml( _it.first );
+        if (!_partXml) {
+            std::cerr << "Part not found: " << _it.first << std::endl;
+            return false;
+        }  
+
+        // encode it 
+        if (_part.parse_xml( _partXml )) {
+            // transpose it to C major or A minor
             _part.transpose();
+            // normalize the meter, so that each part contains the same number of sub-beats
+            _part.set_sub_beats( MIN_SUBBEATS );
         }
         else {
-            std::cerr << "Failed to parse part: " << _partName << " for " << _bwv << std::endl;
+            std::cerr << "Failed to parse part: " << _it.first << " for " << get_BWV() << std::endl;
             return false;
         }
     }
@@ -177,9 +216,9 @@ bool Chorale::encode_parts( const std::vector<std::string>& partsToParse )
     return true;
 }
 
-std::optional<std::reference_wrapper<Part>> Chorale::get_encoded_part(const std::string& partName) {
-    auto it = encodedParts_.find( partName );
-    if (it == encodedParts_.end()) {
+std::optional<std::reference_wrapper<Part>> Chorale::get_part(const std::string& partName) {
+    auto it = parts_.find( partName );
+    if (it == parts_.end()) {
         return std::nullopt;
     }
     else {

@@ -1,8 +1,8 @@
-[ID: BWV 1.6, PART: Soprano, KEY: C-Major, BEATS: 4, SUB-BEATS: 8] 0 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 16 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 16 8 8 0 16 16 0 16 16 0 8 8 8 8 0 8 8 8 8 0 8 8 16 0 16 8 8 0 8 8 8 8 0 16 8 0 0
+[ID: BWV 1.6, PART: Soprano, KEY: C-Major, BEATS: 0, SUB-BEATS: 0]
 
-[ID: BWV 1.6, PART: Alto, KEY: C-Major, BEATS: 4, SUB-BEATS: 8] 0 8 0 8 8 8 8 0 8 8 8 8 0 8 8 4 4 4 4 0 8 8 8 8 0 8 8 4 4 4 4 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 4 4 4 4 0 8 8 8 8 0 8 8 4 4 4 4 0 8 8 8 8 0 16 16 0 4 2 2 8 16 0 8 8 8 8 0 8 8 8 8 0 8 4 4 8 8 0 16 8 4 4 0 8 8 4 4 4 4 0 8 8 8 0 0
+[ID: BWV 1.6a, PART: Alto, KEY: C-Major, BEATS: 0, SUB-BEATS: 0]
 
-[ID: BWV 1.6, PART: Tenor, KEY: C-Major, BEATS: 4, SUB-BEATS: 8] 0 8 0 8 8 8 8 0 8 8 8 8 0 8 8 4 4 8 0 4 4 8 8 4 4 0 4 4 8 4 4 4 4 0 4 4 8 8 8 0 8 8 8 8 0 8 8 8 8 0 8 8 4 4 8 0 4 4 8 8 4 4 0 4 4 8 4 4 4 4 0 4 4 8 8 8 0 16 16 0 16 16 0 8 8 8 8 0 8 8 8 8 0 8 8 8 8 0 16 8 8 0 4 4 4 4 8 4 4 0 8 2 2 4 8 0 0
+[ID: BWV 1.6b, PART: Tenor, KEY: C-Major, BEATS: 0, SUB-BEATS: 0]
 
-[ID: BWV 1.6, PART: Bass, KEY: C-Major, BEATS: 4, SUB-BEATS: 8] 0 8 0 8 8 8 8 0 4 4 4 4 8 8 0 8 4 4 4 4 8 0 8 8 8 8 0 8 8 4 4 8 0 16 8 8 0 8 8 8 8 0 4 4 4 4 8 8 0 8 4 4 4 4 8 0 8 8 8 8 0 8 8 4 4 8 0 16 8 8 0 16 16 0 16 16 0 4 4 4 4 4 4 4 4 0 4 4 4 4 8 4 4 0 8 4 4 8 8 0 16 4 4 8 0 4 4 8 8 4 4 0 8 8 8 0 0
+[ID: BWV 1.6c, PART: Bass, KEY: C-Major, BEATS: 0, SUB-BEATS: 0]
 

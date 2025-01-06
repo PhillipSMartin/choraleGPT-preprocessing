@@ -9,9 +9,6 @@
 #include <tinyxml2.h>
 #include <vector>
 
-// if sub_beats in the musicXml is less than this, we will multiply all durations to increase it to this value
-static inline const int MIN_SUBBEATS = 8;   
-
 // class containing info about a single voice part
 class Part {
     public:
@@ -51,9 +48,8 @@ class Part {
         // if we are in 4/4 time, beatsPerMeasure_ is 4
         // subBeats_ represents the granularity
         // if the shortest note in 4/4 time is an eighth note, subBeats_ is 2
-        // We normalize all parts so the subBeats_ is MIN_SUBBEATS, defined abouve
-        int beatsPerMeasure_ = 0;   
-        int subBeats_ = 0;  
+        unsigned int beatsPerMeasure_ = 0;   
+        unsigned int subBeats_ = 0;  
 
         // a negative number for key_ represents the number of flats in the key signature  
         // a positive number represents the number of sharps in the key signature
@@ -85,16 +81,18 @@ class Part {
         // parse the encoding (performed on the musicXml in a previous run) 
         bool parse_encoding( const std::string& part );
         // transpose part to the key with given number of sharps (if plus) or flats (if minus)
-        bool transpose( int key = 0 ); 
+        bool transpose( int key = 0 );       
 
         // accessors to private variables
-        std::string get_partName() const { return partName_; }
+        std::string get_part_name() const { return partName_; }
         std::string get_header() const;
-        int get_beatsPerMeasure() const { return beatsPerMeasure_; }
-        int get_subBeats() const { return subBeats_; }
+        int get_beats_per_measure() const { return beatsPerMeasure_; }
+        int get_sub_beats() const { return subBeats_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
         std::vector<Encoding> get_line() const { return line_; }
+
+        void set_sub_beats( unsigned int subBeats );
 
         // conversions to facillitate printing
         std::string key_to_string() const {
