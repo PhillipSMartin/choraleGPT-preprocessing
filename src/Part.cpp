@@ -23,16 +23,16 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
     }
 
     // Construct line_ from each measure
-    line_.emplace_back( Marker{Marker::MarkerType::SOC} );
+    line_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::SOC ) );
     while (measure) {
         if (!parse_measure( measure )) {
             return false;
         }
-        line_.emplace_back( Marker{Marker::MarkerType::EOM} );
+        line_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::EOM ) );
         measure = measure->NextSiblingElement( "measure" );
     }
 
-    line_.emplace_back( Marker{Marker::MarkerType::EOC} );
+    line_.emplace_back(std::make_unique<Marker>( Marker::MarkerType::EOC ) );
     return true;
 }
 
@@ -68,8 +68,8 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     XMLElement* _note = try_get_child( measure, "note" );
     while (_note) {
-        line_.emplace_back( Note{ _note } );
-        if (!line_.back().is_valid()) {
+        line_.emplace_back( std::make_unique<Note>( _note  ) );
+        if (!line_.back()->is_valid()) {
             std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
             return false;
         }
@@ -80,12 +80,12 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
 
 bool Part::transpose( int key ) {
     while (key != key_) {
-        for ( Encoding _token : line_ ) {
-            if (_token.is_note() && (key > key_)) { 
-                transpose_up( static_cast<Note&>( _token ) ); 
+        for ( auto& _token : line_ ) {
+            if (_token->is_note() && (key > key_)) { 
+                transpose_up( static_cast<Note&>( *_token ) ); 
             }
-            else if (_token.is_note() && (key < key_)) {
-                transpose_down( static_cast<Note&>( _token ) );
+            else if (_token->is_note() && (key < key_)) {
+                transpose_down( static_cast<Note&>( *_token ) );
             }
         }
 
@@ -101,9 +101,10 @@ bool Part::transpose( int key ) {
 }
 
  void Part::set_sub_beats( unsigned int subBeats ) {
-    unsigned int _oldSubBeats{ subBeats };
-    for (Encoding& _encoding : line_) {
-        _encoding.set_duration( _encoding.get_duration() * subBeats / _oldSubBeats );
+    unsigned int _oldSubBeats{ subBeats_ };
+    subBeats_ = subBeats;
+    for (auto& _encoding : line_) {
+        _encoding->set_duration( _encoding->get_duration() * subBeats / _oldSubBeats );
     }
  }
 
@@ -124,13 +125,13 @@ std::string Part::to_string() const {
     
     for (const auto& _encoding : line_) {
         _os << " ";
-        _os << _encoding;
+        _os << _encoding->to_string();
     }
     return _os.str();
 }
 
 std::ostream& operator <<( std::ostream& os, const Part& part) { 
-    os << part.to_string() << std::endl;
+    os << part.to_string() << '\n';
     return os;
 }
 

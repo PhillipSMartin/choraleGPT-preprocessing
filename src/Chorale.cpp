@@ -17,13 +17,14 @@ using namespace std::literals;
 unsigned int Chorale::lastBWV_{0};
 char Chorale::lastModifier_{'`'};
 
-void Chorale::parse_title_from_xml() {
+std::string Chorale::get_title_from_xml() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", /* verbose =*/ false );
     if (_creditElement) {
         XMLElement* _creditWordsElement = try_get_child( _creditElement, "credit-words", /* verbose =*/ false);
         if (_creditWordsElement)
-            title_ = _creditWordsElement->GetText();
+            return _creditWordsElement->GetText();
     }
+    return "";
 }
 
 bool Chorale::load_xml() {
@@ -41,7 +42,7 @@ bool Chorale::load_xml() {
     }
 
     if (isXmlLoaded_) {
-        parse_title_from_xml();
+        title_ = get_title_from_xml();
     }
     return isXmlLoaded_;
 }
@@ -146,7 +147,7 @@ tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const
     return (it != partXmls_.end()) ? it->second : nullptr;
 }
 
-std::string Chorale::get_BWV() const {
+std::string Chorale::build_BWV() const {
     auto _it = std::find(xmlSource_.rbegin(), xmlSource_.rend(), '/');
     unsigned int _bwv = std::stoi(xmlSource_.substr(std::distance(_it, xmlSource_.rend())));
     std::ostringstream _bwvStream;
@@ -177,7 +178,7 @@ void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
         // instantiate a Part object and store it in a dictionary, keyed by part name
         parts_.emplace(std::piecewise_construct,
             std::forward_as_tuple(_partName), // std::string
-            std::forward_as_tuple(get_BWV(), title_, _partName)); // Part
+            std::forward_as_tuple(bwv_, title_, _partName)); // Part
     }
 }
 
@@ -191,7 +192,7 @@ bool Chorale::encode_parts()
         }
     }  
 
-    for (auto _it : parts_) {
+    for (auto& _it : parts_) {
         // retrieve xml for this part
         Part& _part = _it.second;
         XMLElement* _partXml = get_part_xml( _it.first );
@@ -208,7 +209,7 @@ bool Chorale::encode_parts()
             _part.set_sub_beats( MIN_SUBBEATS );
         }
         else {
-            std::cerr << "Failed to parse part: " << _it.first << " for " << get_BWV() << std::endl;
+            std::cerr << "Failed to parse part: " << _it.first << " for " << bwv_ << std::endl;
             return false;
         }
     }

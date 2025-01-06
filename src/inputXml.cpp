@@ -44,7 +44,7 @@ bool print_to_console( const Arguments& args, Chorale& chorale ) {
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
         if (auto _part = chorale.get_part( _partName )) {
-            std::cout << _part.value().get() << "\n\n";
+            std::cout << _part.value().get() << '\n';
         }
         else {
             std::cerr << "Part " << _partName << " not found for BWV " << chorale.get_BWV() << std::endl;
@@ -60,7 +60,7 @@ bool export_to_file( const Arguments& args, Chorale& chorale, std::ofstream& out
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
         if (auto _part = chorale.get_part( _partName )) {
-            outputFile << _part.value().get() << '\n';
+            outputFile << _part.value().get();
         }
         else {
             std::cerr << "Part " << _partName << " not found for BWV " << chorale.get_BWV() << std::endl;

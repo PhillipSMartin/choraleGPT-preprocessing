@@ -8,6 +8,7 @@
 #include <string>
 #include <tinyxml2.h>
 #include <vector>
+#include <memory>
 
 // class containing info about a single voice part
 class Part {
@@ -68,7 +69,7 @@ class Part {
         //  EOM: end of measure 
         //  EOP: end of phrase (follows EOM if a phrase ends at a measure)
         //  EOC: always the last word
-        std::vector<Encoding> line_;
+        std::vector<std::unique_ptr<Encoding>> line_;
 
     public:
         Part() = default;
@@ -90,7 +91,7 @@ class Part {
         int get_sub_beats() const { return subBeats_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
-        std::vector<Encoding> get_line() const { return line_; }
+        std::vector<std::unique_ptr<Encoding>>& get_line() { return line_; }
 
         void set_sub_beats( unsigned int subBeats );
 

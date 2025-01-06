@@ -1,3 +1,2 @@
 ../data/106B.xml
-../data/106C.xml
 ../data/206B.xml

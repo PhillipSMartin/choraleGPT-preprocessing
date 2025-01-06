@@ -14,7 +14,6 @@ class Encoding {
 
         Encoding() = default;
         Encoding( unsigned int duration ) : duration_{duration} {}
-        virtual std::string to_string() const { return std::to_string( duration_ ); }
         bool parse_xml( tinyxml2::XMLElement* element );    
 
     public:
@@ -22,7 +21,8 @@ class Encoding {
         virtual bool is_note() { return false; }
         unsigned int get_duration() { return duration_; }
         void set_duration( unsigned int duration ) { duration_ = duration; }
-
+        virtual std::string to_string() const { return std::to_string( duration_ ); }
+        
         friend std::ostream& operator <<( std::ostream& os, const Encoding& enc ) { return os << enc.to_string(); }
 };
 
