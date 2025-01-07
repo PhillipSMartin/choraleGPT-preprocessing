@@ -186,9 +186,9 @@ void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
 }
 
 void Chorale::load_parts( std::vector<std::unique_ptr<Part>>& parts ) {
-    // for (const auto& _part : parts) {
-    //     parts_[_part->get_part_name()] = std::move(_part);
-    // } 
+    for (auto& _part : parts) {
+        parts_[_part->get_part_name()] = std::move(_part);
+    }
 }
 
 bool Chorale::encode_parts()
