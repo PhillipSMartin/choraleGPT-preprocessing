@@ -23,24 +23,47 @@ std::string Marker::to_string() const {
 }
 
 Note::Note( const std::string& encoding ) {
-    std::string _inputNote;
+    try {
+        parse_encoding( encoding );
+    }
+    catch (std::exception& e) {
+        std::cerr << "Error parsing note: " << encoding << std::endl;
+        isValid_ = false;
+    }
+}
+
+void Note::parse_encoding( const std::string& encoding ) {
+    std::istringstream _is{encoding}; 
+
+    std::string _inputPitch;
     std::string _inputOctave;
     std::string _inputDuration;
-    std::istringstream _is{encoding}; 
-    std::getline( _is, _inputNote, '.');  
-    std::getline( _is, _inputOctave, '.');
+    std::getline( _is, _inputPitch, '.');  
+    std::getline( _is, _inputOctave, '.');  
     std::getline( _is, _inputDuration);
 
-    pitch_ = _inputNote[0];
+    parse_pitch( _inputPitch );
     octave_ = std::stoi( _inputOctave );
     duration_ = std::stoi( _inputDuration );
-    if (_inputNote.length() > 1) {
-        accidental_ = std::stoi( _inputNote.substr( 1 ) );
+}
+
+void Note::parse_pitch( const std::string& pitch ) {
+    std::string _savePitch{ pitch }; 
+    if (_savePitch[0] == '+') {
+        tie_ = true;
+        _savePitch = _savePitch.substr( 1 );
+    }
+    pitch_ = _savePitch[0];
+    if (_savePitch.length() > 1) {
+        accidental_ = std::stoi( _savePitch.substr( 1 ) );
     }
 }
 
 std::string Note::pitch_to_string() const {
     std::ostringstream _os;
+    if ( tie_ ) {
+        _os << "+";
+    }
     _os << pitch_;
     if ( accidental_) {
         _os << accidental_;
@@ -51,7 +74,7 @@ std::string Note::pitch_to_string() const {
 }  
 
 bool Note::parse_xml( XMLElement* note )  {
-    isValid = false;
+    isValid_ = false;
     XMLElement* _pitch = note ? note->FirstChildElement( "pitch" ) : nullptr;
     if (_pitch) {
         XMLElement* _step = XmlUtils::try_get_child( _pitch, "step" );
@@ -61,31 +84,31 @@ bool Note::parse_xml( XMLElement* note )  {
             pitch_ = _step->GetText()[0];
             accidental_ =  _alter ? std::stoi( _alter->GetText() ) : 0;
             octave_ = std::stoi( _octave->GetText() ); 
-            isValid = true;   
+            isValid_ = true;   
         }
     }
     else {
         if (note->FirstChildElement( "rest" )) {
-            isValid = true;
+            isValid_ = true;
         }
     }
 
-    if (isValid) {
+    if (isValid_) {
         Encoding::parse_xml( note ); // may change isValid to false
     }
-    return isValid;
+    return isValid_;
 }
 
 bool Encoding::parse_xml( XMLElement* element ) {
     XMLElement* _duration = XmlUtils::try_get_child( element, "duration" );
     if (_duration) {
         duration_ = atoi( _duration->GetText() );
-        isValid = true;
+        isValid_ = true;
     }
     else {
-        isValid = false;
+        isValid_ = false;
     }
-    return isValid;
+    return isValid_;
 }   
 
 std::string Chord::to_string() const {

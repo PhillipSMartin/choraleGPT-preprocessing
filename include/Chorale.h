@@ -33,11 +33,15 @@ class Chorale {
             xmlSource_{xmlSource}, 
             bwv_{(bwv.length() == 0) ? build_BWV(xmlSource) : bwv}  {}
 
+        // load functions
         bool load_xml();        // read and process the xmlSource
         bool load_part_xmls();  // populate the partXmls_ map from doc_
         void load_parts( const std::vector<std::string>& partsToParse ); // populate the parts_ map with empty Part objects
         void load_parts( std::vector<std::unique_ptr<Part>>& parts ); // populate the parts_ map with supplied Part objects
-        bool encode_parts(); // process empty Part objects in parts_ map
+        
+        // process functions
+        bool encode_parts();    // process empty Part objects in parts_ map
+        bool combine_parts();   // build chord tokens by combining all parts
 
         // getters
         std::string get_BWV() const { return bwv_; }

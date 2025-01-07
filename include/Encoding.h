@@ -10,14 +10,14 @@
 class Encoding {
     protected: 
         unsigned int duration_{0}; 
-        bool isValid{true};
+        bool isValid_{true};
 
         Encoding() = default;
         Encoding( unsigned int duration ) : duration_{duration} {}
         bool parse_xml( tinyxml2::XMLElement* element );    
 
     public:
-        bool is_valid() { return isValid; }
+        bool is_valid() { return isValid_; }
         virtual bool is_note() { return false; }
         unsigned int get_duration() { return duration_; }
         void set_duration( unsigned int duration ) { duration_ = duration; }
@@ -55,18 +55,23 @@ class Note : public Encoding {
         char pitch_{'R'};
         unsigned int octave_{0};
         int accidental_{0};
+        bool tie_{false};
 
     public:
         Note() = default;
-        Note(char pitch, unsigned int octave, unsigned int duration, int accidental=0) : 
+        Note(char pitch, unsigned int octave, unsigned int duration, int accidental=0, bool tie=false) : 
             Encoding{duration}, 
             pitch_{pitch}, 
             octave_{octave},
-            accidental_{accidental} {}
+            accidental_{accidental},
+            tie_{tie} {}
+
         // Note with no pitch is a rest
         Note(unsigned int duration) : Encoding{duration} {}
+
         // Constructor to parse xml
         Note(tinyxml2::XMLElement* note) { parse_xml( note ); }
+        // Constructor to parse encoding in format "pitch.octave.duration"
         Note(const std::string& encoding);
 
         bool is_note() override { return true; }
@@ -77,7 +82,15 @@ class Note : public Encoding {
         std::string pitch_to_string() const;
 
         bool parse_xml( tinyxml2::XMLElement* note ); 
-        void transpose( const std::map<char, TranspositionRule>& rules );   
+        void transpose( const std::map<char, TranspositionRule>& rules );  
+
+    private:
+        // helper functions for Note( encoding ) constructor
+
+        // expects encoding in format "pitch.octave.duration"
+        void parse_encoding( const std::string& encoding );
+        //  expects format "[+]pitch[half-step alteration]"
+        void parse_pitch( const std::string& pitch );
 };
 
 class Chord : public Encoding {

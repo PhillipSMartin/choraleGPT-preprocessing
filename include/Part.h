@@ -64,8 +64,9 @@ class Part {
         //  SOC: always the first word
         //  a note is presented in the format <pitch>.<octave>.<duration>
         //      <pitch> consists of a capital letter (A-G) or 'R' to indicate a rest,
-        //          optionally followed by 1, 2, -1, or -2, indicating the number
-        //          of half-steps above or below the given note
+        //            optionally followed by 1, 2, -1, or -2, indicating the number
+        //            of half-steps above or below the given note
+        //          if the pitch is tied from the previous beat, the token starts with a '+'
         //      <octave> is always 0 for a rest
         //      <duration> is a number indicating the number of subbeats the note or rest is held
         //  EOM: end of measure 
