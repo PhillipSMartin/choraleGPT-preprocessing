@@ -43,7 +43,7 @@ std::vector<std::string> get_xml_sources( const Arguments& args ) {
 bool print_to_console( const Arguments& args, Chorale& chorale ) {
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
-        if (Part* _part = chorale.get_part( _partName )) {
+        if (auto& _part = chorale.get_part( _partName )) {
             std::cout << *_part << '\n';
         }
         else {
@@ -59,7 +59,7 @@ bool print_to_console( const Arguments& args, Chorale& chorale ) {
 bool export_to_file( const Arguments& args, Chorale& chorale, std::ofstream& outputFile ) {
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
-        if (Part* _part = chorale.get_part( _partName )) {
+        if (auto& _part = chorale.get_part( _partName )) {
             outputFile << *_part;
         }
         else {

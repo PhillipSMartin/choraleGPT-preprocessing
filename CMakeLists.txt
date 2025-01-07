@@ -30,6 +30,7 @@ add_executable(inputXml
 add_executable(inputEncodings
     src/inputEncodings.cpp
     src/Arguments.cpp
+    src/Chorale.cpp
     src/Encoding.cpp
     src/Part.cpp
     src/XmlUtils.cpp
@@ -44,5 +45,6 @@ target_link_libraries(inputXml
 
 target_link_libraries(inputEncodings 
     PRIVATE
+    CURL::libcurl
     ${TINYXML2_LIBRARIES}
 )

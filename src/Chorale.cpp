@@ -16,6 +16,7 @@ using namespace std::literals;
 
 unsigned int Chorale::lastBWV_{0};
 char Chorale::lastModifier_{'`'};
+std::unique_ptr<Part> Chorale::nullPart_ = nullptr;
 
 std::string Chorale::get_title_from_xml() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", /* verbose =*/ false );
@@ -147,9 +148,9 @@ tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const
     return (it != partXmls_.end()) ? it->second : nullptr;
 }
 
-std::string Chorale::build_BWV() const {
-    auto _it = std::find(xmlSource_.rbegin(), xmlSource_.rend(), '/');
-    unsigned int _bwv = std::stoi(xmlSource_.substr(std::distance(_it, xmlSource_.rend())));
+std::string Chorale::build_BWV( const std::string& xmlSource ) const {
+    auto _it = std::find(xmlSource.rbegin(), xmlSource.rend(), '/');
+    unsigned int _bwv = std::stoi(xmlSource.substr(std::distance(_it, xmlSource.rend())));
     std::ostringstream _bwvStream;
 
     // last two digits of bwv are a sub-group
@@ -176,10 +177,18 @@ void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
     for (const std::string& _partName : partsToParse) {
 
         // instantiate a Part object and store it in a dictionary, keyed by part name
-        parts_.emplace(std::piecewise_construct,
-            std::forward_as_tuple(_partName), // std::string
-            std::forward_as_tuple(bwv_, title_, _partName)); // Part
+        parts_[ _partName ] = std::make_unique<Part>( bwv_, title_, _partName );
+
+        // parts_.emplace(std::piecewise_construct,
+        //     std::forward_as_tuple(_partName), // std::string
+        //     std::forward_as_tuple(bwv_, title_, _partName)); // Part
     }
+}
+
+void Chorale::load_parts( std::vector<std::unique_ptr<Part>>& parts ) {
+    // for (const auto& _part : parts) {
+    //     parts_[_part->get_part_name()] = std::move(_part);
+    // } 
 }
 
 bool Chorale::encode_parts()
@@ -194,7 +203,7 @@ bool Chorale::encode_parts()
 
     for (auto& _it : parts_) {
         // retrieve xml for this part
-        Part& _part = _it.second;
+        auto& _part = _it.second;
         XMLElement* _partXml = get_part_xml( _it.first );
         if (!_partXml) {
             std::cerr << "Part not found: " << _it.first << std::endl;
@@ -202,11 +211,11 @@ bool Chorale::encode_parts()
         }  
 
         // encode it 
-        if (_part.parse_xml( _partXml )) {
+        if (_part->parse_xml( _partXml )) {
             // transpose it to C major or A minor
-            _part.transpose();
+            _part->transpose();
             // normalize the meter, so that each part contains the same number of sub-beats
-            _part.set_sub_beats( MIN_SUBBEATS );
+            _part->set_sub_beats( MIN_SUBBEATS );
         }
         else {
             std::cerr << "Failed to parse part: " << _it.first << " for " << bwv_ << std::endl;
@@ -217,14 +226,7 @@ bool Chorale::encode_parts()
     return true;
 }
 
-Part* Chorale::get_part(const std::string& partName) {
-    auto _it = parts_.find( partName );
-    if (_it == parts_.end()) {
-        return nullptr;
-    }
-    else {
-        return &_it->second;
-    }
+std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
+    auto _it = parts_.find(partName);
+    return (_it != parts_.end()) ? _it->second : nullPart_;
 }
-
-

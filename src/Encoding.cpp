@@ -2,6 +2,7 @@
 #include "XmlUtils.h"
 
 #include <map>
+#include <sstream>
 
 using namespace tinyxml2;
 
@@ -9,15 +10,32 @@ using namespace tinyxml2;
 std::string Marker::to_string() const {
     switch (markerType_) {
         case MarkerType::SOC:
-            return "[SOC]";
+            return SOC_STR;
         case MarkerType::EOM:
-            return "[EOM]";
+            return EOM_STR;
         case MarkerType::EOP:
-            return "[EOP]";
+            return EOP_STR;
         case MarkerType::EOC:
-            return "[EOC]";
+            return EOC_STR;
         default:
-            return "[UNK]";
+            return UNK_STR;
+    }
+}
+
+Note::Note( const std::string& encoding ) {
+    std::string _inputNote;
+    std::string _inputOctave;
+    std::string _inputDuration;
+    std::istringstream _is{encoding}; 
+    std::getline( _is, _inputNote, '.');  
+    std::getline( _is, _inputOctave, '.');
+    std::getline( _is, _inputDuration);
+
+    pitch_ = _inputNote[0];
+    octave_ = std::stoi( _inputOctave );
+    duration_ = std::stoi( _inputDuration );
+    if (_inputNote.length() > 1) {
+        accidental_ = std::stoi( _inputNote.substr( 1 ) );
     }
 }
 

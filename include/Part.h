@@ -27,6 +27,8 @@ class Part {
         static inline const std::string SUB_BEATS = "SUB-BEATS: ";
         static inline const std::string EOH = "]";
         static inline const std::string DELIM = ", ";
+        static inline const std::string MAJOR_STR = "Major";
+        static inline const std::string MINOR_STR = "Minor";
 
     private:
         // for converting key_ to a displayable string
@@ -85,6 +87,7 @@ class Part {
         bool transpose( int key = 0 );       
 
         // accessors to private variables
+        std::string get_id() const { return id_; }
         std::string get_part_name() const { return partName_; }
         std::string get_header() const;
         int get_beats_per_measure() const { return beatsPerMeasure_; }
@@ -102,7 +105,7 @@ class Part {
                 + mode_to_string();
         }
         std::string mode_to_string() const {
-            return mode_ == Mode::MAJOR ? "Major" : "Minor";
+            return (mode_ == Mode::MAJOR) ? MAJOR_STR : MINOR_STR;
         }
         std::string to_string() const;
 
@@ -120,10 +123,13 @@ class Part {
         tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName );
 
         // helper functions for parse_encoding
-        // save information from first (header) token
+
+        // save info from header
         bool import_header( const std::string& header );
-        // save tokens follwing header in line_ vector
-        bool import_line( const std::string& line );
+        std::string find_header_value( const std::string& header, const std::string& key ) const;
+        bool import_encodings( const std::string& line );
+        std::unique_ptr<Encoding> make_encoding( const std::string& encoding ) const;
+        bool import_key( const std::string& keyString );
 
         // helper functions for transpose function
 

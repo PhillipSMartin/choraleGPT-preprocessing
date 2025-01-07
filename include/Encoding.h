@@ -34,6 +34,11 @@ class Marker : public Encoding {
             EOP, // end of phrase
             EOC  // end of chorale
         };
+        static inline const std::string SOC_STR = "[SOC]";
+        static inline const std::string EOM_STR = "[EOM]";
+        static inline const std::string EOP_STR = "[EOP]";
+        static inline const std::string EOC_STR = "[EOC]";
+        static inline const std::string UNK_STR = "[UNK]";       
 
     protected:
         MarkerType markerType_;
@@ -42,7 +47,7 @@ class Marker : public Encoding {
         Marker(MarkerType markerType) : markerType_{markerType} {}
         MarkerType get_marker_type() { return markerType_; }
 
-        std::string to_string() const override;
+       std::string to_string() const override;
 };
 
 class Note : public Encoding {
@@ -62,6 +67,7 @@ class Note : public Encoding {
         Note(unsigned int duration) : Encoding{duration} {}
         // Constructor to parse xml
         Note(tinyxml2::XMLElement* note) { parse_xml( note ); }
+        Note(const std::string& encoding);
 
         bool is_note() override { return true; }
 

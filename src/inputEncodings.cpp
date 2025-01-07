@@ -1,4 +1,5 @@
 #include "Arguments.h"
+#include "Chorale.h"
 #include "Part.h"
 
 #include <fstream>
@@ -20,13 +21,16 @@ int main( int argc, char** argv )
     }
 
     std::string _line;
-    std::string _currentBWV;
-    std::getline( _partEncodings, _line );
+    while (std::getline( _partEncodings, _line )) {
+        std::vector<Part> _parts;
+        for (size_t i = 0; i < 4; i++) {
+            _parts.emplace_back();
+            _parts.back().parse_encoding( _line );
+        } 
 
-    Part _part{};
-    _part.parse_encoding( _line );
+        Chorale _chorale{ "", _parts.back().get_id()} ;    
+    }
 
- 
     _partEncodings.close();
     return 0;
 }

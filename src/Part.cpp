@@ -143,8 +143,9 @@ XMLElement* Part::try_get_child( XMLElement* parent, const char* childName ) {
     return _xmlElement;
 }
 
+
 bool Part::parse_encoding( const std::string& part ) {
-    auto _it = part.find(']');
+    auto _it = part.find(EOH);
     if (_it == std::string::npos) {
         std::cerr << "No header found. Line = " << part;
         return false;
@@ -153,27 +154,83 @@ bool Part::parse_encoding( const std::string& part ) {
     if (!import_header( part.substr( 0, _it + 1 ))) {
         return false;
     }
-    return import_line( part.substr( _it + 1 ) );
+    return import_encodings( part.substr( _it + 1 ) );
+}
+
+bool Part::import_key( const std::string& keyString )  {
+    std::string _inputKey; 
+    std::string _inputMode;
+    std::istringstream _is{keyString}; 
+    std::getline( _is, _inputKey, '-' );  
+    std::getline( _is, _inputMode );
+
+    auto it = std::find(std::begin(circle_of_fifths_), std::end(circle_of_fifths_), _inputKey);
+    if (it != std::end(circle_of_fifths_)) {
+        key_ = std::distance(std::begin(circle_of_fifths_), it) - index_of_C();
+    }
+
+    if (_inputMode == MAJOR_STR) {
+        mode_ = Mode::MAJOR;
+    }
+    else if (_inputMode == MINOR_STR) {
+        mode_ = Mode::MINOR;
+        key_ -= 3;
+    }
+    else {
+        return false;
+    }
+
+    return true;
+}
+
+std::string Part::find_header_value( const std::string& header, const std::string& key ) const {
+    auto _it = header.find( key );
+    if (_it == std::string::npos) {
+        std::cerr << "No " << key << " found in header: " << header;
+        return "";
+    }
+
+    size_t _cursor = _it + key.length();
+    auto _delim = header.find(DELIM, _cursor);
+    if (_delim == std::string::npos) {
+        _delim = header.find(EOH, _cursor); // guaranteed to be there by caller
+    }
+
+    return header.substr( _cursor, _delim - _cursor );
 }
 
 bool Part::import_header( const std::string& header ) {
-    // auto _it = header.find( ID );
-    // if (_it == std::string::npos) {
-    //     std::cerr << "No ID found. Header = " << header;
-    //     return false;
-    // }
-    // int _cursor = _it + ID.length();
-    // auto _delim = header.find_first_of( ",]", _cursor );
-    // id_ = header.substr( _cursor, _delim - _cursor);
+    id_ = find_header_value( header, ID );
+    partName_ = find_header_value( header, PART );
+    beatsPerMeasure_ = stoi( find_header_value( header, BEATS ) );
+    subBeats_ = stoi( find_header_value( header, SUB_BEATS ) );
+    return import_key( find_header_value( header, KEY ) ); // updates key_ and mode_
+}
 
+bool Part::import_encodings( const std::string& line ) {
+    std::istringstream _is{ line };
+    std::string _token;
+    while (_is >> _token) {
+        line_.emplace_back( make_encoding( _token ) );
+    }
     return true;
 }
 
-bool Part::import_line( const std::string& line ) {
-    std::istringstream _is{ line };
-    std::string _word1, _word2;
-    _is >> _word1 >> _word2;
-    std::cout << "word1:" << _word1 << ", word2:" << _word2 << std::endl;
-    return true;
+std::unique_ptr<Encoding> Part::make_encoding( const std::string& encoding ) const {
+    if (encoding == Marker::SOC_STR) {   
+        return std::make_unique<Marker>( Marker::MarkerType::SOC );
+    }
+    else if (encoding == Marker::EOC_STR) {
+        return std::make_unique<Marker>( Marker::MarkerType::EOC );
+    }
+    else if (encoding == Marker::EOP_STR) {
+        return std::make_unique<Marker>( Marker::MarkerType::EOP );
+    }
+    else if (encoding == Marker::EOM_STR) {
+        return std::make_unique<Marker>( Marker::MarkerType::EOM );
+    }
+
+    // if it's not a marker, it must be a note
+    return std::make_unique<Note>( encoding );
 }
 
