@@ -47,7 +47,7 @@ bool print_to_console( const Arguments& args, Chorale& chorale ) {
             std::cout << *_part << '\n';
         }
         else {
-            std::cerr << "Part " << _partName << " not found for BWV " << chorale.get_BWV() << std::endl;
+            std::cerr << "Part " << _partName << " not found for " << chorale.get_BWV() << std::endl;
             return 1;
         }
     }
@@ -63,7 +63,7 @@ bool export_to_file( const Arguments& args, Chorale& chorale, std::ofstream& out
             outputFile << *_part;
         }
         else {
-            std::cerr << "Part " << _partName << " not found for BWV " << chorale.get_BWV() << std::endl;
+            std::cerr << "Part " << _partName << " not found for " << chorale.get_BWV() << std::endl;
             return 1;
         }
     }
@@ -108,7 +108,7 @@ int main( int argc, char** argv ) {
             // extract the parts and encode them
             _chorale.load_parts( _args.get_parts_to_parse() );
             if (!_chorale.encode_parts()) {
-                std::cerr << "Failed to encode parts for BWV " << _chorale.get_BWV() << std::endl;
+                std::cerr << "Failed to encode parts for " << _chorale.get_BWV() << std::endl;
                 return 1;
             }
 

@@ -20,24 +20,40 @@ int main( int argc, char** argv )
         return 1;
     }
 
+    bool _done = false;
     std::string _line;
-    while (std::getline( _partEncodings, _line )) {
-        std::vector<std::unique_ptr<Part>> _parts;
-        for (size_t i = 0; i < 4; i++) {
+    std::vector<std::unique_ptr<Part>> _parts;
+    while (!_done) {
+        _parts.clear();
+        for (size_t _i = 0; _i < 4; _i++) {
+            if (!std::getline(_partEncodings, _line)) {
+                // if we haven't started a new chorale, we're done
+                if ( _i == 0 ) {
+                    _done = true;
+                    break;
+                }
+                /// otherwise, we have a chorale with fewer than four voices
+                else {
+                    std::cerr << "Missing voices for chorale " << _parts.back()->get_id() << std::endl;
+                    break;
+                }
+            }
             _parts.push_back( std::make_unique<Part>() );
             _parts.back()->parse_encoding( _line );
         } 
 
-        Chorale _chorale{ "", _parts.back()->get_id()} ; 
-        _chorale.load_parts( _parts );   
+        if (!_done) {
+            Chorale _chorale{ "", _parts.back()->get_id()} ; 
+            _chorale.load_parts( _parts );   
 
-        for (std::string _partName : _args.get_parts_to_parse() ) {
-            if (auto& _part = _chorale.get_part( _partName )) {
-                std::cout << *_part << '\n';
-            }
-            else {
-                std::cerr << "Part " << _partName << " not found for BWV " << _chorale.get_BWV() << std::endl;
-                return 1;
+            for (std::string _partName : _args.get_parts_to_parse() ) {
+                if (auto& _part = _chorale.get_part( _partName )) {
+                    std::cout << *_part << '\n';
+                }
+                else {
+                    std::cerr << "Part " << _partName << " not found for " << _chorale.get_BWV() << std::endl;
+                    return 1;
+                }
             }
         }
     }
