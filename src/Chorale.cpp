@@ -175,13 +175,8 @@ void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
 
     // get each requested part name
     for (const std::string& _partName : partsToParse) {
-
         // instantiate a Part object and store it in a dictionary, keyed by part name
         parts_[ _partName ] = std::make_unique<Part>( bwv_, title_, _partName );
-
-        // parts_.emplace(std::piecewise_construct,
-        //     std::forward_as_tuple(_partName), // std::string
-        //     std::forward_as_tuple(bwv_, title_, _partName)); // Part
     }
 }
 
@@ -196,7 +191,7 @@ bool Chorale::encode_parts()
     // load part xmls
     if (partXmls_.empty()) {
         if (!load_part_xmls()) {
-            std::cerr << "Failed to build part list" << std::endl;
+            std::cerr << "Failed to build part list for " << bwv_ << std::endl;
             return false;
         }
     }  
@@ -204,14 +199,9 @@ bool Chorale::encode_parts()
     for (auto& _it : parts_) {
         // retrieve xml for this part
         auto& _part = _it.second;
-        XMLElement* _partXml = get_part_xml( _it.first );
-        if (!_partXml) {
-            std::cerr << "Part not found: " << _it.first << std::endl;
-            return false;
-        }  
 
         // encode it 
-        if (_part->parse_xml( _partXml )) {
+        if (_part->parse_xml( get_part_xml( _it.first ) )) {
             // transpose it to C major or A minor
             _part->transpose();
             // normalize the meter, so that each part contains the same number of sub-beats
