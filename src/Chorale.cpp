@@ -235,17 +235,6 @@ bool Chorale::combine_parts() {
     _combinedParts->set_sub_beats( _sopranoPart->get_sub_beats() );
     _combinedParts->set_beats_per_measure( _sopranoPart->get_beats_per_measure() );
 
-    // keep track of position and define lambdas for error messages
-    unsigned int _measureNo = 0;
-    unsigned int _subBeatNo = 0;;
-    unsigned int _subBeatsPerBeat = _sopranoPart->get_sub_beats();
-
-    auto show_progress = [&_measureNo, &_subBeatNo, &_subBeatsPerBeat, this]() -> std::string {
-        return "at m. " + std::to_string( _measureNo + 1 ) 
-            + ", beat " + std::to_string( (_subBeatNo / _subBeatsPerBeat ) + 1 )
-            + " in " + bwv_;
-    };
-
     // get the first token for each part
     auto _sopranoToken = _sopranoPart->pop_encoding();
     auto _altoToken = _altoPart->pop_encoding();
@@ -308,7 +297,7 @@ bool Chorale::combine_parts() {
 
         // if we ran out of tokens, we have a problem
         if (!_sopranoToken || !_altoToken || !_tenorToken || !_bassToken) {
-            std::cerr << "Total duration of parts does not match " << show_progress() << std::endl;
+            std::cerr << "Total duration of parts does not match" << std::endl;
             std::cerr << show_tokens() << std::endl;
             return false;
         }
@@ -317,7 +306,7 @@ bool Chorale::combine_parts() {
         if (*_sopranoToken != *_altoToken 
             || *_sopranoToken != *_tenorToken 
             || *_sopranoToken != *_bassToken) {
-            std::cerr << "Incompatible encodings " << show_progress() << std::endl;
+            std::cerr << "Incompatible encodings" << std::endl;
             std::cerr << show_tokens() << std::endl;
             return false;
         }
@@ -328,15 +317,14 @@ bool Chorale::combine_parts() {
             if (_sopranoToken->is_EOC()) {
                 _done = true;
             }
-            // if it is EOM, we have finished a measure
-            else if (_sopranoToken->is_EOM()) {
-                _measureNo++;
-                _subBeatNo = 0;
-            }
 
             _combinedParts->push_encoding( _sopranoToken );
-            std::cout << "Added marker: " << _combinedParts->get_last_encoding()->to_string() << std::endl;         
-           _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
+            auto& _pushedToken = _combinedParts->get_last_encoding();
+            std::cout << "Added marker: " 
+                << _combinedParts->location_to_string( _pushedToken.get() ) 
+                << ": " << _pushedToken->to_string() << std::endl;         
+
+            _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
 
             continue;
         }
@@ -360,6 +348,7 @@ bool Chorale::combine_parts() {
             auto chord = std::make_unique<Chord>(_notes, _shortestDuration);
             auto encoding = std::unique_ptr<Encoding>(chord.release());
             _combinedParts->push_encoding(encoding);
+            auto& _pushedToken = _combinedParts->get_last_encoding();
 
             // reduce durations
             reduce_duration( _sopranoNote, _shortestDuration, _needSopranoToken );
@@ -367,8 +356,9 @@ bool Chorale::combine_parts() {
             reduce_duration( _tenorNote, _shortestDuration, _needTenorToken );
             reduce_duration( _bassNote, _shortestDuration, _needBassToken );
 
-            std::cout << "Added chord " << show_progress() << ":  " << _combinedParts->get_last_encoding()->to_string() << std::endl;
-            _subBeatNo += _shortestDuration;
+            std::cout << "Added chord " 
+                << _combinedParts->location_to_string( _pushedToken.get() ) 
+                << ":  " << _pushedToken->to_string() << std::endl;
         }
     }
 

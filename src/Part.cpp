@@ -23,16 +23,19 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
     }
 
     // Construct encodings_ from each measure
-    encodings_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::SOC ) );
+    std::unique_ptr<Encoding> _token = std::make_unique<Marker>( Marker::MarkerType::SOC );
+    push_encoding( _token );
     while (measure) {
         if (!parse_measure( measure )) {
             return false;
         }
-        encodings_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::EOM ) );
+        _token = std::make_unique<Marker>( Marker::MarkerType::EOM );
+        push_encoding( _token );
         measure = measure->NextSiblingElement( "measure" );
     }
 
-    encodings_.emplace_back(std::make_unique<Marker>( Marker::MarkerType::EOC ) );
+    _token = std::make_unique<Marker>( Marker::MarkerType::EOC );
+    push_encoding( _token );
     return true;
 }
 
@@ -59,7 +62,7 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 
     XMLElement* divisions = try_get_child( attributes, "divisions" );
     if (divisions) {
-        subBeats_ = atoi( divisions->GetText() );
+        subBeatsPerBeat_ = atoi( divisions->GetText() );
     }
 
     return fifths && mode && beats && divisions;
@@ -68,11 +71,13 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     XMLElement* _note = try_get_child( measure, "note" );
     while (_note) {
-        encodings_.emplace_back( std::make_unique<Note>( _note  ) );
-        if (!encodings_.back()->is_valid()) {
+        std::unique_ptr<Encoding> _token = std::make_unique<Note>( _note  );       
+        if (!_token->is_valid()) {
             std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
             return false;
         }
+
+        push_encoding( _token );
         _note = _note->NextSiblingElement( "note" );
     }
     return true;
@@ -100,11 +105,12 @@ bool Part::transpose( int key ) {
     return true;
 }
 
- void Part::set_sub_beats( unsigned int subBeats ) {
-    unsigned int _oldSubBeats{ subBeats_ };
-    subBeats_ = subBeats;
+ void Part::set_sub_beats( size_t subBeats ) {
+    size_t _oldSubBeats{ subBeatsPerBeat_ };
+    subBeatsPerBeat_ = subBeats;
     for (auto& _encoding : encodings_) {
         _encoding->set_duration( _encoding->get_duration() * subBeats / _oldSubBeats );
+        _encoding->set_tick_number( (_encoding->get_tick_number() - 1) * subBeats / _oldSubBeats + 1 );
     }
  }
 
@@ -114,7 +120,7 @@ std::string Part::get_header() const {
         << DELIM << PART << partName_  
         << DELIM << KEY + key_to_string() 
         << DELIM << BEATS  << beatsPerMeasure_ 
-        << DELIM << SUB_BEATS << subBeats_
+        << DELIM << SUB_BEATS << subBeatsPerBeat_
         << EOH;
     return _os.str();
 }
@@ -128,6 +134,33 @@ std::string Part::to_string() const {
         _os << _encoding->to_string();
     }
     return _os.str();
+}
+
+std::string Part::location_to_string( const Encoding* encoding ) const {
+    if (encoding)
+    {
+        std::ostringstream _os;
+
+        // display BWV
+        _os << "[" << id_ 
+
+        // display measure number and beat number
+        << ", m. " << encoding->get_measure_number() 
+            << ", b. " << tick_to_beat( encoding->get_tick_number() );
+
+        // display sub-beat number only if beat is sub-divided
+        if (tick_to_sub_beat( encoding->get_tick_number() ) == 1 &&
+                (encoding->is_marker() || encoding->get_duration() >=  subBeatsPerBeat_)) {
+            _os << ']';
+        } 
+        else  {
+            _os << '.' << tick_to_sub_beat( encoding->get_tick_number() ) << "]";
+        }
+        return _os.str();
+    }
+    else {
+        return "[ null ]";
+    }
 }
 
 std::ostream& operator <<( std::ostream& os, const Part& part) { 
@@ -203,7 +236,7 @@ bool Part::import_header( const std::string& header ) {
     id_ = find_header_value( header, ID );
     partName_ = find_header_value( header, PART );
     beatsPerMeasure_ = stoi( find_header_value( header, BEATS ) );
-    subBeats_ = stoi( find_header_value( header, SUB_BEATS ) );
+    subBeatsPerBeat_ = stoi( find_header_value( header, SUB_BEATS ) );
     return import_key( find_header_value( header, KEY ) ); // updates key_ and mode_
 }
 
@@ -211,7 +244,8 @@ bool Part::import_encodings( const std::string& line ) {
     std::istringstream _is{ line };
     std::string _token;
     while (_is >> _token) {
-        encodings_.emplace_back( make_encoding( _token ) );
+        std::unique_ptr<Encoding> _encoding = make_encoding( _token ); 
+        push_encoding( _encoding );
     }
     return true;
 }
@@ -233,4 +267,53 @@ std::unique_ptr<Encoding> Part::make_encoding( const std::string& encoding ) con
     // if it's not a marker, it must be a note
     return std::make_unique<Note>( encoding );
 }
+
+std::unique_ptr<Encoding> Part::pop_encoding() {
+    if (encodings_.empty()) {
+        return nullptr;
+    }
+    else {
+        auto first = std::move(encodings_.front());
+        encodings_.erase(encodings_.begin());
+        return first;
+    }
+}
+void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
+
+    // if the encoding is EOM, bump measure number and reset tick
+    if (encoding->is_EOM()) {
+        if (ticks_remaining() > 0) {
+            if (currentMeasure_ == 1) {
+                currentMeasure_ = 0;    // first full measure will be measure 1
+                handle_upbeat();
+            }
+            else {
+                return; // ignore EOM for an incomplete measure after the first
+            }
+        }
+        currentMeasure_++;
+        nextTick_ = 1;
+    }
+
+    // save current location and bump tick
+    encoding->set_location( currentMeasure_, nextTick_ );
+    nextTick_ += encoding->get_duration();
+
+    encodings_.push_back( std::move(encoding) );
+}
+
+size_t Part::ticks_remaining() const {
+    int _ticksLeft = beatsPerMeasure_ * subBeatsPerBeat_;
+    _ticksLeft -= nextTick_ - 1;
+    return _ticksLeft < 0 ? 0 : _ticksLeft;
+}
+
+void Part::handle_upbeat() {
+    for (auto& _encoding : encodings_) {
+        _encoding->set_location( 0, _encoding->get_tick_number() + ticks_remaining() );
+        // std::cout << "Readjusted encoding: " 
+        //     <<  location_to_string( _encoding.get() )
+        //     << ": " << _encoding->to_string() << std::endl;
+    }
+}   
 

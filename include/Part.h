@@ -49,10 +49,10 @@ class Part {
         std::string partName_;      // name of part within the piece, e.g. "Soprano"     
 
         // if we are in 4/4 time, beatsPerMeasure_ is 4
-        // subBeats_ represents the granularity
-        // if the shortest note in 4/4 time is an eighth note, subBeats_ is 2
-        unsigned int beatsPerMeasure_ = 0;   
-        unsigned int subBeats_ = 0;  
+        // subBeatsPerBeat_ represents the granularity
+        // if the shortest note in 4/4 time is an eighth note, subBeatsPerBeat_ is 2
+        size_t beatsPerMeasure_{1};   
+        size_t subBeatsPerBeat_{1};  
 
         // a negative number for key_ represents the number of flats in the key signature  
         // a positive number represents the number of sharps in the key signature
@@ -69,10 +69,23 @@ class Part {
         //          if the pitch is tied from the previous beat, the token starts with a '+'
         //      <octave> is always 0 for a rest
         //      <duration> is a number indicating the number of subbeats the note or rest is held
-        //  EOM: end of measure 
-        //  EOP: end of phrase (follows EOM if a phrase ends at a measure)
+        //  EOM: end of measure - final EOM omitted if measure is incomplete
+        //  EOP: end of phrase (precedes EOM if a phrase ends at a measure)
         //  EOC: always the last word
         std::vector<std::unique_ptr<Encoding>> encodings_;
+
+        // next position in encodings_ (origin 1)
+        size_t currentMeasure_{1};  // incremented when an EOM is added
+        size_t nextTick_{1}; // incremented when a note or chord is added
+        size_t tick_to_beat( size_t tick ) const {
+            return (tick - 1) / subBeatsPerBeat_ + 1;
+        }
+        size_t tick_to_sub_beat( size_t tick ) const {
+            return (tick - 1) % subBeatsPerBeat_ + 1;
+        }
+
+        size_t ticks_remaining() const; // returns number of ticks left in current measure
+        void handle_upbeat(); // adjust ticks for incomplete first measure
 
     public:
         Part() = default;
@@ -87,35 +100,24 @@ class Part {
         // transpose part to the key with given number of sharps (if plus) or flats (if minus)
         bool transpose( int key = 0 );       
 
-        // accessors to private variables
+        // getters
         std::string get_id() const { return id_; }
         std::string get_part_name() const { return partName_; }
         std::string get_header() const;
         int get_beats_per_measure() const { return beatsPerMeasure_; }
-        int get_sub_beats() const { return subBeats_; }
+        int get_sub_beats() const { return subBeatsPerBeat_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
-        std::vector<std::unique_ptr<Encoding>>& get_line() { return encodings_; }
 
-        void set_beats_per_measure( unsigned int beatsPerMeasure ) {
+        // setters
+        void set_beats_per_measure( size_t beatsPerMeasure ) {
             beatsPerMeasure_ = beatsPerMeasure;
         }
-        void set_sub_beats( unsigned int subBeats );
+        void set_sub_beats( size_t subBeats );
 
         // access encodings_
-        std::unique_ptr<Encoding> pop_encoding() {
-            if (encodings_.empty()) {
-                return nullptr;
-            }
-            else {
-                auto first = std::move(encodings_.front());
-                encodings_.erase(encodings_.begin());
-                return first;
-            }
-        }
-        void push_encoding( std::unique_ptr<Encoding>& encoding ) {
-            encodings_.push_back( std::move(encoding) );
-        }
+        std::unique_ptr<Encoding> pop_encoding();
+        void push_encoding( std::unique_ptr<Encoding>& encoding );
         std::unique_ptr<Encoding>& get_last_encoding() {
             return encodings_.back();
         }
@@ -129,12 +131,13 @@ class Part {
         std::string mode_to_string() const {
             return (mode_ == Mode::MAJOR) ? MAJOR_STR : MINOR_STR;
         }
+        std::string location_to_string( const Encoding* encoding ) const;
         std::string to_string() const;
 
         friend std::ostream& operator <<( std::ostream& os, const Part& part );
 
     private:
-        // helper functions for parse_xml
+        // helper functions for parse_xml()
 
         // parse the MusicXML 'attributes' element, set variables accordingly
         bool parse_attributes( tinyxml2::XMLElement* attributes );
@@ -144,7 +147,7 @@ class Part {
         // returns the specified child of a given XML element or nullptr
         tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName );
 
-        // helper functions for parse_encoding
+        // helper functions for parse_encoding()
 
         // save info from header
         bool import_header( const std::string& header );
@@ -153,7 +156,7 @@ class Part {
         std::unique_ptr<Encoding> make_encoding( const std::string& encoding ) const;
         bool import_key( const std::string& keyString );
 
-        // helper functions for transpose function
+        // helper functions for transpose()
 
         // transpose to a key one level higher in the circle of fifths
         void transpose_up( Note& note ) {

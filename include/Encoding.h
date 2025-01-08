@@ -18,11 +18,17 @@ class Encoding {
 
     protected: 
         unsigned int duration_{0}; 
+        size_t measureNumber_{0}; // origin 1 (0 for incomplete measure with anacrusis)
+        size_t tickNumber_{0}; // origin 1 - position within measure in sub-beats
+
         TokenType tokenType_{UNKNOWN};
         bool isValid_{true};
 
         Encoding() = default;
-        Encoding( unsigned int duration, TokenType tokenType ) : 
+        Encoding( unsigned int duration,
+                TokenType tokenType,
+                size_t measureNumber = 0,
+                size_t subBeatNumber = 0) : 
             duration_{duration}, 
             tokenType_{tokenType} {}
 
@@ -41,9 +47,19 @@ class Encoding {
         bool is_EOP() const;
         bool is_EOC() const;
 
-        // getters and setters
+        // getters 
         unsigned int get_duration() const { return duration_; }
+        size_t get_measure_number() const { return measureNumber_; }
+        size_t get_tick_number() const { return tickNumber_; }
+
+        // setters
         void set_duration( unsigned int duration ) { duration_ = duration; }
+        void set_measure_number( size_t measureNumber ) { measureNumber_ = measureNumber; }
+        void set_tick_number( size_t tickNumber ) { tickNumber_ = tickNumber; }
+        void set_location( size_t measureNumber, size_t tickNumber ) {
+            measureNumber_ = measureNumber;
+            tickNumber_ = tickNumber;
+        }
 
         virtual std::string to_string() const { return std::to_string( duration_ ); }
 
@@ -74,7 +90,9 @@ class Marker : public Encoding {
         MarkerType markerType_;
 
     public:
-        Marker(MarkerType markerType) : Encoding{0, MARKER}, markerType_{markerType} {}
+        Marker(MarkerType markerType, size_t measureNumber=0, size_t subBeatNumber= 0) : 
+            Encoding{0, MARKER, measureNumber, subBeatNumber}, 
+            markerType_{markerType} {}
         MarkerType get_marker_type() const { return markerType_; }
 
         std::string to_string() const override;
@@ -101,15 +119,18 @@ class Note : public Encoding {
             tie_{tie} {}
 
         // Note with no pitch is a rest
-        Note(unsigned int duration) : Encoding{duration, NOTE} {}
+        Note(unsigned int duration, size_t measureNumber=0, size_t subBeatNumber=0) : 
+            Encoding{duration, NOTE, measureNumber, subBeatNumber} {}
 
         // Constructor to take xml
-        Note(tinyxml2::XMLElement* note) : Encoding{0, NOTE} { 
+        Note(tinyxml2::XMLElement* note, size_t measureNumber=0, size_t subBeatNumber=0) : 
+                Encoding{0, NOTE, measureNumber, subBeatNumber} { 
             parse_xml( note ); 
         }
 
         // Constructor to take encoding in format "pitch.octave.duration"
-        Note(const std::string& encoding) : Encoding{0, NOTE} {
+        Note(const std::string& encoding, size_t measureNumber=0, size_t subBeatNumber=0) : 
+                Encoding{0, NOTE, measureNumber, subBeatNumber} { 
             try {
                 parse_encoding( encoding );
             }
@@ -120,13 +141,13 @@ class Note : public Encoding {
         }
     
 
-        // Getters
+        // getters
         char get_pitch() const { return pitch_; }
         unsigned int get_octave() const { return octave_; }
         int get_accidental() const { return accidental_; }
         bool get_tie() const { return tie_; }
 
-        // Setters
+        // setters
         void set_tie( bool tie ) { tie_ = tie; }
 
         std::string to_string() const override {
