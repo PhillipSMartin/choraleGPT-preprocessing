@@ -60,7 +60,7 @@ class Part {
         int key_ = 0;   
         Mode mode_ = Mode::MAJOR;
 
-        // line_ is a vector of words
+        // encodings_ is a vector of words
         //  SOC: always the first word
         //  a note is presented in the format <pitch>.<octave>.<duration>
         //      <pitch> consists of a capital letter (A-G) or 'R' to indicate a rest,
@@ -72,7 +72,7 @@ class Part {
         //  EOM: end of measure 
         //  EOP: end of phrase (follows EOM if a phrase ends at a measure)
         //  EOC: always the last word
-        std::vector<std::unique_ptr<Encoding>> line_;
+        std::vector<std::unique_ptr<Encoding>> encodings_;
 
     public:
         Part() = default;
@@ -95,9 +95,21 @@ class Part {
         int get_sub_beats() const { return subBeats_; }
         int get_key() const { return key_; }
         Mode get_mode() const { return mode_; }
-        std::vector<std::unique_ptr<Encoding>>& get_line() { return line_; }
+        std::vector<std::unique_ptr<Encoding>>& get_line() { return encodings_; }
 
         void set_sub_beats( unsigned int subBeats );
+
+        // access encodings_
+        std::unique_ptr<Encoding> pop_encoding() {
+            if (encodings_.empty()) {
+                return nullptr;
+            }
+            else {
+                auto first = std::move(encodings_.front());
+                encodings_.erase(encodings_.begin());
+                return first;
+            }
+        }
 
         // conversions to facillitate printing
         std::string key_to_string() const {
@@ -117,7 +129,7 @@ class Part {
 
         // parse the MusicXML 'attributes' element, set variables accordingly
         bool parse_attributes( tinyxml2::XMLElement* attributes );
-        // parse the MusicXML 'measure' element, append words to line_ accordingly
+        // parse the MusicXML 'measure' element, append words to encodings_ accordingly
         bool parse_measure( tinyxml2::XMLElement* measure );
 
         // returns the specified child of a given XML element or nullptr

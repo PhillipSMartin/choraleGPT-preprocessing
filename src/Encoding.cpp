@@ -6,6 +6,15 @@
 
 using namespace tinyxml2;
 
+bool Encoding::operator==( const Encoding& other ) const {
+    if ((tokenType_ == MARKER) && (other.tokenType_ == MARKER)) {
+        return dynamic_cast<const Marker&>( *this ).operator==( 
+            dynamic_cast<const Marker&>( other ) );
+    }
+    else {
+        return tokenType_ == other.tokenType_;
+    }
+}
 
 std::string Marker::to_string() const {
     switch (markerType_) {
@@ -19,16 +28,6 @@ std::string Marker::to_string() const {
             return EOC_STR;
         default:
             return UNK_STR;
-    }
-}
-
-Note::Note( const std::string& encoding ) {
-    try {
-        parse_encoding( encoding );
-    }
-    catch (std::exception& e) {
-        std::cerr << "Error parsing note: " << encoding << std::endl;
-        isValid_ = false;
     }
 }
 

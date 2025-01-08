@@ -22,17 +22,17 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
         return false;
     }
 
-    // Construct line_ from each measure
-    line_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::SOC ) );
+    // Construct encodings_ from each measure
+    encodings_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::SOC ) );
     while (measure) {
         if (!parse_measure( measure )) {
             return false;
         }
-        line_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::EOM ) );
+        encodings_.emplace_back( std::make_unique<Marker>( Marker::MarkerType::EOM ) );
         measure = measure->NextSiblingElement( "measure" );
     }
 
-    line_.emplace_back(std::make_unique<Marker>( Marker::MarkerType::EOC ) );
+    encodings_.emplace_back(std::make_unique<Marker>( Marker::MarkerType::EOC ) );
     return true;
 }
 
@@ -68,8 +68,8 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     XMLElement* _note = try_get_child( measure, "note" );
     while (_note) {
-        line_.emplace_back( std::make_unique<Note>( _note  ) );
-        if (!line_.back()->is_valid()) {
+        encodings_.emplace_back( std::make_unique<Note>( _note  ) );
+        if (!encodings_.back()->is_valid()) {
             std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
             return false;
         }
@@ -80,7 +80,7 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
 
 bool Part::transpose( int key ) {
     while (key != key_) {
-        for ( auto& _token : line_ ) {
+        for ( auto& _token : encodings_ ) {
             if (_token->is_note() && (key > key_)) { 
                 transpose_up( static_cast<Note&>( *_token ) ); 
             }
@@ -103,7 +103,7 @@ bool Part::transpose( int key ) {
  void Part::set_sub_beats( unsigned int subBeats ) {
     unsigned int _oldSubBeats{ subBeats_ };
     subBeats_ = subBeats;
-    for (auto& _encoding : line_) {
+    for (auto& _encoding : encodings_) {
         _encoding->set_duration( _encoding->get_duration() * subBeats / _oldSubBeats );
     }
  }
@@ -123,7 +123,7 @@ std::string Part::to_string() const {
     std::ostringstream _os;
     _os << get_header();
     
-    for (const auto& _encoding : line_) {
+    for (const auto& _encoding : encodings_) {
         _os << " ";
         _os << _encoding->to_string();
     }
@@ -211,7 +211,7 @@ bool Part::import_encodings( const std::string& line ) {
     std::istringstream _is{ line };
     std::string _token;
     while (_is >> _token) {
-        line_.emplace_back( make_encoding( _token ) );
+        encodings_.emplace_back( make_encoding( _token ) );
     }
     return true;
 }

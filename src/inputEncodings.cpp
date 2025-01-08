@@ -39,22 +39,15 @@ int main( int argc, char** argv )
                 }
             }
             _parts.push_back( std::make_unique<Part>() );
+
+            // build Part object from the input line
             _parts.back()->parse_encoding( _line );
         } 
 
         if (!_done) {
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-
-            for (std::string _partName : _args.get_parts_to_parse() ) {
-                if (auto& _part = _chorale.get_part( _partName )) {
-                    std::cout << *_part << '\n';
-                }
-                else {
-                    std::cerr << "Part " << _partName << " not found for " << _chorale.get_BWV() << std::endl;
-                    return 1;
-                }
-            }
+            _chorale.combine_parts();
         }
     }
 

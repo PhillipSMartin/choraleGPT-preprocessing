@@ -22,10 +22,14 @@ class Chorale {
         tinyxml2::XMLDocument doc_;
         bool isXmlLoaded_ = false;
 
+        // metadata
         std::string bwv_;       // BWV number
         std::string title_;     // chorale title (empty if not supplied by xml)
+
+        // data
         std::map<std::string, tinyxml2::XMLElement*> partXmls_; // the xml elements for each part
         std::map<std::string, std::unique_ptr<Part>> parts_;    // the Part objects for each part
+        std::vector<std::unique_ptr<Encoding>> combinedParts_;
 
     public:
         // if bwv is empty, we will generate it from the xmlSource
