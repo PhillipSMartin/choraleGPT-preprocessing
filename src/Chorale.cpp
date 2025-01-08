@@ -223,13 +223,17 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
 
 bool Chorale::combine_parts() {
     parts_["Combined"] = std::make_unique<Part>( bwv_, title_, "Combined" );
-    auto& _combinedParts = get_part("Combined");
 
     // get tokens for each part
     auto& _sopranoPart = get_part("Soprano");
     auto& _altoPart = get_part("Alto");
     auto& _tenorPart = get_part("Tenor");
     auto& _bassPart = get_part("Bass");
+
+    // add a new combined part
+    auto& _combinedParts = get_part("Combined");   
+    _combinedParts->set_sub_beats( _sopranoPart->get_sub_beats() );
+    _combinedParts->set_beats_per_measure( _sopranoPart->get_beats_per_measure() );
 
     // keep track of position and define lambdas for error messages
     unsigned int _measureNo = 0;

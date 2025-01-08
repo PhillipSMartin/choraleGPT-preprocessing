@@ -97,6 +97,9 @@ class Part {
         Mode get_mode() const { return mode_; }
         std::vector<std::unique_ptr<Encoding>>& get_line() { return encodings_; }
 
+        void set_beats_per_measure( unsigned int beatsPerMeasure ) {
+            beatsPerMeasure_ = beatsPerMeasure;
+        }
         void set_sub_beats( unsigned int subBeats );
 
         // access encodings_
