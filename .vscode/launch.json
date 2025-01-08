@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/inputEncodings",
-            "args": ["../outputs/two-chorales-output.txt", "-satb", "-f", "../outputs/output.txt"],
+            "args": ["../outputs/two-chorales-separate-parts.txt", "-satb", "-f", "../outputs/output.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],

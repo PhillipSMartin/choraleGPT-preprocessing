@@ -6,6 +6,35 @@
 
 using namespace tinyxml2;
 
+bool Encoding::is_SOC() const {
+    if ( is_marker() ) {
+        return dynamic_cast<const Marker&>(*this).get_marker_type() == Marker::MarkerType::SOC;
+    }
+    return false;
+}
+
+bool Encoding::is_EOC() const {
+    if ( is_marker() ) {
+        return dynamic_cast<const Marker&>(*this).get_marker_type() == Marker::MarkerType::EOC;
+    }
+    return false;
+}
+
+bool Encoding::is_EOM() const {
+    if ( is_marker() ) {
+        return dynamic_cast<const Marker&>(*this).get_marker_type() == Marker::MarkerType::EOM;
+    }
+    return false;
+}
+
+
+bool Encoding::is_EOP() const {
+    if ( is_marker() ) {
+        return dynamic_cast<const Marker&>(*this).get_marker_type() == Marker::MarkerType::EOP;
+    }
+    return false;
+}
+
 bool Encoding::operator==( const Encoding& other ) const {
     if ((tokenType_ == MARKER) && (other.tokenType_ == MARKER)) {
         return dynamic_cast<const Marker&>( *this ).operator==( 

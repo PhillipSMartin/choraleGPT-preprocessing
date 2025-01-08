@@ -25,14 +25,23 @@ class Encoding {
         Encoding( unsigned int duration, TokenType tokenType ) : 
             duration_{duration}, 
             tokenType_{tokenType} {}
+
         bool parse_xml( tinyxml2::XMLElement* element );    
 
     public:
-        bool is_valid() { return isValid_; }
-        bool is_note() { return tokenType_ == NOTE; }
-        bool is_marker() { return tokenType_ == MARKER; }
-        bool is_chord() { return tokenType_ == CHORD; }
+        virtual ~Encoding() = default;
+        
+        // test type
+        bool is_valid() const { return isValid_; }
+        bool is_note() const { return tokenType_ == NOTE; }
+        bool is_marker() const { return tokenType_ == MARKER; }
+        bool is_chord() const { return tokenType_ == CHORD; }
+        bool is_SOC() const;
+        bool is_EOM() const;
+        bool is_EOP() const;
+        bool is_EOC() const;
 
+        // getters and setters
         unsigned int get_duration() const { return duration_; }
         void set_duration( unsigned int duration ) { duration_ = duration; }
 
@@ -94,9 +103,12 @@ class Note : public Encoding {
         // Note with no pitch is a rest
         Note(unsigned int duration) : Encoding{duration, NOTE} {}
 
-        // Constructor to parse xml
-        Note(tinyxml2::XMLElement* note) : Encoding{0, NOTE} { parse_xml( note ); }
-        // Constructor to parse encoding in format "pitch.octave.duration"
+        // Constructor to take xml
+        Note(tinyxml2::XMLElement* note) : Encoding{0, NOTE} { 
+            parse_xml( note ); 
+        }
+
+        // Constructor to take encoding in format "pitch.octave.duration"
         Note(const std::string& encoding) : Encoding{0, NOTE} {
             try {
                 parse_encoding( encoding );
@@ -104,8 +116,8 @@ class Note : public Encoding {
             catch (std::exception& e) {
                 std::cerr << "Error parsing note: " << encoding << std::endl;
                 isValid_ = false;
-            }
-}
+            }       
+        }
     
 
         // Getters
@@ -113,6 +125,8 @@ class Note : public Encoding {
         unsigned int get_octave() const { return octave_; }
         int get_accidental() const { return accidental_; }
         bool get_tie() const { return tie_; }
+
+        // Setters
         void set_tie( bool tie ) { tie_ = tie; }
 
         std::string to_string() const override {
@@ -142,11 +156,5 @@ class Chord : public Encoding {
             Encoding{duration, CHORD},
             notes_{notes, notes + N} {}
 
-        // Chord(const std::vector<Note>& notes, unsigned int duration) : 
-        //     Encoding{duration, CHORD}, 
-        //     notes_{notes} {} 
-        // Chord(const std::vector<Note>&& notes, unsigned int duration) : 
-        //     Encoding{duration, CHORD}, 
-        //     notes_{std::move( notes )} {}
         std::string to_string() const;
 };

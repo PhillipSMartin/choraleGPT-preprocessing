@@ -324,19 +324,16 @@ bool Chorale::combine_parts() {
 
         // if we have a Marker, add it to the combined parts
         if (_sopranoToken->is_marker() ) {
-            auto _marker = dynamic_cast<const Marker*>( _sopranoToken.get() );
-
             // if it is EOC, we are done
-            if (_marker->get_marker_type() == Marker::MarkerType::EOC) {
+            if (_sopranoToken->is_EOC()) {
                 _done = true;
             }
             // if it is EOM, we have finished a measure
-            else if (_marker->get_marker_type() == Marker::MarkerType::EOM) {
+            else if (_sopranoToken->is_EOM()) {
                 _measureNo++;
                 _subBeatNo = 0;
             }
 
- 
             _combinedParts->push_encoding( _sopranoToken );
             std::cout << "Added marker: " << _combinedParts->get_last_encoding()->to_string() << std::endl;         
            _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
