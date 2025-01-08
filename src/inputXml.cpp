@@ -102,14 +102,14 @@ int main( int argc, char** argv ) {
             // load xml for this chorale
             if (!_chorale.load_xml()) {
                 std::cerr << "Failed to load xml source: " << _xmlSource << std::endl;
-                return 1;
+                continue;
             }
 
             // extract the parts and encode them
             _chorale.load_parts( _args.get_parts_to_parse() );
             if (!_chorale.encode_parts()) {
                 std::cerr << "Failed to encode parts for " << _chorale.get_BWV() << std::endl;
-                return 1;
+                continue;
             }
 
             // print or save results
@@ -123,6 +123,8 @@ int main( int argc, char** argv ) {
                     return 1;
                 }
             }
+
+            std::cout << "Encoded " << _chorale.get_BWV() << std::endl;
         }
 
         return 0;
