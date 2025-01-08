@@ -222,23 +222,22 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
 }
 
 bool Chorale::combine_parts() {
-    combinedParts_.clear();
-
-    // keep track of position and define lambdas for error messages
-    unsigned int _measureNo = 0;
-    unsigned int _beatNo = 1;
-
-    auto show_progress = [_measureNo, _beatNo, this]() -> std::string {
-        return "at m. " + std::to_string(_measureNo) 
-            + ", beat" + std::to_string(_beatNo) 
-            + " in " + bwv_;
-    };
-
     // get tokens for each part
     auto& _sopranoPart = get_part("Soprano");
     auto& _altoPart = get_part("Alto");
     auto& _tenorPart = get_part("Tenor");
     auto& _bassPart = get_part("Bass");
+
+    // keep track of position and define lambdas for error messages
+    unsigned int _measureNo = 0;
+    unsigned int _subBeatNo = 0;;
+    unsigned int _subBeatsPerBeat = _sopranoPart->get_sub_beats();
+
+    auto show_progress = [&_measureNo, &_subBeatNo, &_subBeatsPerBeat, this]() -> std::string {
+        return "at m. " + std::to_string( _measureNo + 1 ) 
+            + ", beat " + std::to_string( (_subBeatNo / _subBeatsPerBeat ) + 1 )
+            + " in " + bwv_;
+    };
 
     // get the first token for each part
     auto _sopranoToken = _sopranoPart->pop_encoding();
@@ -318,9 +317,16 @@ bool Chorale::combine_parts() {
 
         // if we have a Marker, add it to the combined parts
         if (_sopranoToken->is_marker() ) {
+            auto _marker = dynamic_cast<const Marker*>( _sopranoToken.get() );
+
             // if it is EOC, we are done
-            if (dynamic_cast<const Marker&>( *_sopranoToken ).get_marker_type() == Marker::MarkerType::EOC) {
+            if (_marker->get_marker_type() == Marker::MarkerType::EOC) {
                 _done = true;
+            }
+            // if it is EOM, we have finished a measure
+            else if (_marker->get_marker_type() == Marker::MarkerType::EOM) {
+                _measureNo++;
+                _subBeatNo = 0;
             }
             combinedParts_.push_back( std::move( _sopranoToken ) );
             _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
@@ -353,7 +359,8 @@ bool Chorale::combine_parts() {
             reduce_duration( _tenorNote, _shortestDuration, _needTenorToken );
             reduce_duration( _bassNote, _shortestDuration, _needBassToken );
 
-            std::cout << "Added chord: " << combinedParts_.back()->to_string() << std::endl;
+            std::cout << "Added chord " << show_progress() << ":  " << combinedParts_.back()->to_string() << std::endl;
+            _subBeatNo += _shortestDuration;
         }
     }
 

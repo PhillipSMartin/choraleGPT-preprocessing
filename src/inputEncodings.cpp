@@ -13,6 +13,16 @@ int main( int argc, char** argv )
         return 1;
     }
 
+    // open output file if we have one
+    std::ofstream _outputFile{};
+    if (_args.has_output_file()) {
+        _outputFile.open( _args.get_output_file(), std::ios::out );
+        if (!_outputFile) {
+            std::cerr << "Failed to open output file: " << _args.get_output_file() << std::endl;
+            return 1;
+        }
+    }
+
     // read part encodings
     std::ifstream _partEncodings{_args.get_input_source()};
     if (!_partEncodings) {
@@ -49,8 +59,19 @@ int main( int argc, char** argv )
             _chorale.load_parts( _parts );   
             _chorale.combine_parts();
         }
+
+        // if (_args.has_output_file()) {
+        //     if (auto& _part = _chorale.get_combined_parts()) {
+        //         _outputFile << *_part;
+        //     }
+        //     else {
+        //         std::cerr << "Combined parts not found for " << _chorale.get_BWV() << std::endl;
+        //         return 1;
+        //     }
+        // }
     }
 
     _partEncodings.close();
+    _outputFile.close();
     return 0;
 }
