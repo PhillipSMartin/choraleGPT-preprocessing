@@ -222,6 +222,9 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
 }
 
 bool Chorale::combine_parts() {
+    parts_["Combined"] = std::make_unique<Part>( bwv_, title_, "Combined" );
+    auto& _combinedParts = get_part("Combined");
+
     // get tokens for each part
     auto& _sopranoPart = get_part("Soprano");
     auto& _altoPart = get_part("Alto");
@@ -328,10 +331,11 @@ bool Chorale::combine_parts() {
                 _measureNo++;
                 _subBeatNo = 0;
             }
-            combinedParts_.push_back( std::move( _sopranoToken ) );
-            _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
 
-            std::cout << "Added marker: " << combinedParts_.back()->to_string() << std::endl;
+ 
+            _combinedParts->push_encoding( _sopranoToken );
+            std::cout << "Added marker: " << _combinedParts->get_last_encoding()->to_string() << std::endl;         
+           _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
 
             continue;
         }
@@ -351,7 +355,10 @@ bool Chorale::combine_parts() {
 
             // add the note to the combined parts
             Note _notes[4] = { *_sopranoNote, *_altoNote, *_tenorNote, *_bassNote };
-            combinedParts_.push_back(std::make_unique<Chord>(_notes, _shortestDuration));
+
+            auto chord = std::make_unique<Chord>(_notes, _shortestDuration);
+            auto encoding = std::unique_ptr<Encoding>(chord.release());
+            _combinedParts->push_encoding(encoding);
 
             // reduce durations
             reduce_duration( _sopranoNote, _shortestDuration, _needSopranoToken );
@@ -359,7 +366,7 @@ bool Chorale::combine_parts() {
             reduce_duration( _tenorNote, _shortestDuration, _needTenorToken );
             reduce_duration( _bassNote, _shortestDuration, _needBassToken );
 
-            std::cout << "Added chord " << show_progress() << ":  " << combinedParts_.back()->to_string() << std::endl;
+            std::cout << "Added chord " << show_progress() << ":  " << _combinedParts->get_last_encoding()->to_string() << std::endl;
             _subBeatNo += _shortestDuration;
         }
     }

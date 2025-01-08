@@ -29,7 +29,6 @@ class Chorale {
         // data
         std::map<std::string, tinyxml2::XMLElement*> partXmls_; // the xml elements for each part
         std::map<std::string, std::unique_ptr<Part>> parts_;    // the Part objects for each part
-        std::vector<std::unique_ptr<Encoding>> combinedParts_;
 
     public:
         // if bwv is empty, we will generate it from the xmlSource

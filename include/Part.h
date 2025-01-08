@@ -110,6 +110,12 @@ class Part {
                 return first;
             }
         }
+        void push_encoding( std::unique_ptr<Encoding>& encoding ) {
+            encodings_.push_back( std::move(encoding) );
+        }
+        std::unique_ptr<Encoding>& get_last_encoding() {
+            return encodings_.back();
+        }
 
         // conversions to facillitate printing
         std::string key_to_string() const {
