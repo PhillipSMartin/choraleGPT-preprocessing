@@ -44,7 +44,7 @@ class Chorale {
         
         // process functions
         bool encode_parts();    // process empty Part objects in parts_ map
-        bool combine_parts();   // build chord tokens by combining all parts
+        bool combine_parts( bool verbose = false );   // build chord tokens by combining all parts
 
         // getters
         std::string get_BWV() const { return bwv_; }

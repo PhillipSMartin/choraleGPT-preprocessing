@@ -107,16 +107,18 @@ class Note : public Encoding {
         char pitch_{'R'};
         unsigned int octave_{0};
         int accidental_{0};
-        bool tie_{false};
+        bool tied_{false}; // tied from previous note
+
+        static inline bool tie_started_{false}; // the next note we save should be marked tied_=true
 
     public:
         Note() : Encoding{0, NOTE} {}    
-        Note(char pitch, unsigned int octave, unsigned int duration, int accidental=0, bool tie=false) : 
+        Note(char pitch, unsigned int octave, unsigned int duration, int accidental=0, bool tied=false) : 
             Encoding{duration, NOTE}, 
             pitch_{pitch}, 
             octave_{octave},
             accidental_{accidental},
-            tie_{tie} {}
+            tied_{tied} {}
 
         // Note with no pitch is a rest
         Note(unsigned int duration, size_t measureNumber=0, size_t subBeatNumber=0) : 
@@ -145,10 +147,10 @@ class Note : public Encoding {
         char get_pitch() const { return pitch_; }
         unsigned int get_octave() const { return octave_; }
         int get_accidental() const { return accidental_; }
-        bool get_tie() const { return tie_; }
+        bool get_tied() const { return tied_; }
 
         // setters
-        void set_tie( bool tie ) { tie_ = tie; }
+        void set_tied( bool tie ) { tied_ = tie; }
 
         std::string to_string() const override {
             return pitch_to_string() + '.' + Encoding::to_string(); 

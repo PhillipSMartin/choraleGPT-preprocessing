@@ -57,7 +57,7 @@ int main( int argc, char** argv )
         if (!_done) {
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-            _chorale.combine_parts();
+            _chorale.combine_parts( _args.verbose() );
  
 
             if (_args.has_output_file()) {

@@ -84,7 +84,7 @@ class Part {
             return (tick - 1) % subBeatsPerBeat_ + 1;
         }
 
-        size_t ticks_remaining() const; // returns number of ticks left in current measure
+        int ticks_remaining() const; // returns number of ticks left in current measure
         void handle_upbeat(); // adjust ticks for incomplete first measure
 
     public:

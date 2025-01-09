@@ -78,7 +78,7 @@ void Note::parse_encoding( const std::string& encoding ) {
 void Note::parse_pitch( const std::string& pitch ) {
     std::string _savePitch{ pitch }; 
     if (_savePitch[0] == '+') {
-        tie_ = true;
+        tied_ = true;
         _savePitch = _savePitch.substr( 1 );
     }
     pitch_ = _savePitch[0];
@@ -89,7 +89,7 @@ void Note::parse_pitch( const std::string& pitch ) {
 
 std::string Note::pitch_to_string() const {
     std::ostringstream _os;
-    if ( tie_ ) {
+    if ( tied_ ) {
         _os << "+";
     }
     _os << pitch_;
@@ -114,6 +114,21 @@ bool Note::parse_xml( XMLElement* note )  {
             octave_ = std::stoi( _octave->GetText() ); 
             isValid_ = true;   
         }
+
+        // handle ties
+        if (tie_started_) {
+            tied_ = true;
+        }
+        XMLElement* _tie = XmlUtils::try_get_child( note, "tie", /* verbose= */ false );
+        if (_tie) {
+            const char* _type = _tie->Attribute( "type" );
+            if (_type && strcmp( _type, "start" ) == 0) {
+                tie_started_ = true;
+            }
+            else if (_type && strcmp( _type, "stop" ) == 0) {
+                tie_started_ = false;
+            }
+        }
     }
     else {
         if (note->FirstChildElement( "rest" )) {
@@ -122,6 +137,7 @@ bool Note::parse_xml( XMLElement* note )  {
     }
 
     if (isValid_) {
+        // get duration
         Encoding::parse_xml( note ); // may change isValid to false
     }
     return isValid_;

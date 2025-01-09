@@ -80,6 +80,12 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
         push_encoding( _token );
         _note = _note->NextSiblingElement( "note" );
     }
+
+    if (ticks_remaining() < 0) {
+        auto& _lastToken = get_last_encoding();
+        std::cerr << location_to_string( _lastToken.get() ) << ": Too many notes in " << partName_  << std::endl;
+        return false;
+    }
     return true;
 }
 
@@ -302,10 +308,9 @@ void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
     encodings_.push_back( std::move(encoding) );
 }
 
-size_t Part::ticks_remaining() const {
+int Part::ticks_remaining() const {
     int _ticksLeft = beatsPerMeasure_ * subBeatsPerBeat_;
-    _ticksLeft -= nextTick_ - 1;
-    return _ticksLeft < 0 ? 0 : _ticksLeft;
+    return _ticksLeft - nextTick_ + 1;
 }
 
 void Part::handle_upbeat() {

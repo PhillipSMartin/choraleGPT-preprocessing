@@ -221,7 +221,7 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
     return (_it != parts_.end()) ? _it->second : nullPart_;
 }
 
-bool Chorale::combine_parts() {
+bool Chorale::combine_parts( bool verbose ) {
     parts_["Combined"] = std::make_unique<Part>( bwv_, title_, "Combined" );
 
     // get tokens for each part
@@ -284,7 +284,7 @@ bool Chorale::combine_parts() {
             // otherwise next note is tied to this one
             else {
                 note->set_duration( _newDuration );
-                note->set_tie( true );
+                note->set_tied( true );
             }
         };
 
@@ -320,9 +320,11 @@ bool Chorale::combine_parts() {
 
             _combinedParts->push_encoding( _sopranoToken );
             auto& _pushedToken = _combinedParts->get_last_encoding();
-            std::cout << "Added marker: " 
-                << _combinedParts->location_to_string( _pushedToken.get() ) 
-                << ": " << _pushedToken->to_string() << std::endl;         
+            if (verbose) {
+                std::cout << "Added marker: " 
+                    << _combinedParts->location_to_string( _pushedToken.get() ) 
+                    << ": " << _pushedToken->to_string() << std::endl;  
+            }       
 
             _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
 
@@ -356,9 +358,11 @@ bool Chorale::combine_parts() {
             reduce_duration( _tenorNote, _shortestDuration, _needTenorToken );
             reduce_duration( _bassNote, _shortestDuration, _needBassToken );
 
-            std::cout << "Added chord " 
-                << _combinedParts->location_to_string( _pushedToken.get() ) 
-                << ":  " << _pushedToken->to_string() << std::endl;
+            if (verbose) {
+                std::cout << "Added chord " 
+                    << _combinedParts->location_to_string( _pushedToken.get() ) 
+                    << ":  " << _pushedToken->to_string() << std::endl;
+            }
         }
     }
 
