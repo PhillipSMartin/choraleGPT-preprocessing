@@ -97,6 +97,10 @@ int main( int argc, char** argv ) {
 
         // process each musicXml source in list
         for (const std::string& _xmlSource : _xmlSources) {
+            if (_xmlSource.empty() || _xmlSource.substr(0,2) == "//") {
+                continue;
+            }
+            
             Chorale _chorale{ _xmlSource };
 
             // load xml for this chorale

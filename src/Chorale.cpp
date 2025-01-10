@@ -78,13 +78,7 @@ size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* u
     return realsize;
 }
 
-bool Chorale::load_part_xmls() {
-    if (!isXmlLoaded_) {
-         std::cerr << "XML file not loaded" << std::endl;
-         return false;
-    }
-
-    // map part ids to part names
+bool Chorale::load_part_ids() {
     // xml sample:
     //    <part-list>
     //         ...
@@ -94,28 +88,42 @@ bool Chorale::load_part_xmls() {
     //         </score-part>
     //         ...
     //    </part-list>
+    if (!isXmlLoaded_) {
+         std::cerr << "XML file not loaded" << std::endl;
+         return false;
+    }
 
-    partXmls_.clear();
-    std::map<std::string, std::string> _partIds;
+    partIds_.clear();
+
+    // get the <part-list> element
     XMLElement* _partListElement = XmlUtils::try_get_child( doc_.RootElement(), "part-list" );
     if (_partListElement) {
 
+        // get the first <score-part> element under <part-list>
         XMLElement* _scorePartElement = try_get_child( _partListElement, "score-part" );
         if (!_scorePartElement)
             return false;
 
         while (_scorePartElement) {
+            // get the id attribute from the <score-part> element
             const char* _partId = _scorePartElement->Attribute( "id" );
+            // get the part name from the <part-name> element (child of <score-part>)
             XMLElement* _partNameElement = try_get_child( _scorePartElement, "part-name" );
             if (!_partNameElement)
                 return false;
 
-            _partIds[ _partId ] = _partNameElement->GetText();
+            // save the part name in a temporary map keyed by part id
+            partIds_[ _partId ] = _partNameElement->GetText();
+
+            // get the next <score-part> element under <part-list>
             _scorePartElement = _scorePartElement->NextSiblingElement( "score-part" );
         }
     }
 
-    // get the parts themselves
+    return true;
+}
+
+bool Chorale::load_part_xmls() {
     // xml sample
     //  <part id="P1">
     //     <measure implicit="yes" number="0">
@@ -124,19 +132,31 @@ bool Chorale::load_part_xmls() {
     //     ...
     //  </part>
 
+    if (partIds_.empty()) {
+         std::cerr << "Part ids not loaded" << std::endl;
+         return false;
+    }
+
+    partXmls_.clear();
+
+    // get the first <part> element 
     XMLElement* _partElement = try_get_child( doc_.RootElement(), "part");
     if (!_partElement)
         return false;
 
     while (_partElement) {
-        auto _it = _partIds.find( _partElement->Attribute( "id" ) );
-        if (_it == _partIds.end())
+        // save the Part id so we have a record of the order they were imported
+        partIdList_.push_back( _partElement->Attribute( "id" ) );
+
+        // look up the part name for this part id 
+        auto _it = partIds_.find( _partElement->Attribute( "id" ) );
+        if (_it == partIds_.end())
         {
             std::cerr << "Part id not found in part_list: " << _partElement->Attribute( "id" ) << std::endl;
             return false;
         }
 
-        // save it in dictionary, keyed by part name
+        // save the XML element in partXmls_ 
         partXmls_[ _it->second ] = _partElement;
         _partElement = _partElement->NextSiblingElement("part");
     }
@@ -144,7 +164,21 @@ bool Chorale::load_part_xmls() {
 }
 
 tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const { 
-    auto it = partXmls_.find(partName);
+    auto it = partXmls_.find( partName );
+
+    // if we can't find it, perhaps it's under a different name
+    if (it == partXmls_.end()) {
+        if (partIdList_.size() == 4) {
+            // If four parts, assume non-standard part names
+
+            // Get the name of the part in the appropriate position
+            std::string _assumedPartId{partIdList_[partNameIndices_[partName]]};
+            std::string _newPartName{partIds_.find(_assumedPartId)->second};
+            std::cout << "Using part name " << _newPartName << " instead of " << partName 
+                << " in " << bwv_ << std::endl;
+            it = partXmls_.find( _newPartName );
+        }
+    }
     return (it != partXmls_.end()) ? it->second : nullptr;
 }
 
@@ -173,7 +207,7 @@ std::string Chorale::build_BWV( const std::string& xmlSource ) const {
 void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
     parts_.clear();
 
-    // get each requested part name
+    // get each requested part name (passed as a command-line argument)
     for (const std::string& _partName : partsToParse) {
         // instantiate a Part object and store it in a dictionary, keyed by part name
         parts_[ _partName ] = std::make_unique<Part>( bwv_, title_, _partName );
@@ -188,6 +222,14 @@ void Chorale::load_parts( std::vector<std::unique_ptr<Part>>& parts ) {
 
 bool Chorale::encode_parts()
 {
+    // map part ids to part names
+    if (partIds_.empty()) {
+        if (!load_part_ids()) {
+            std::cerr << "Failed to map part ids to part names for " << bwv_ << std::endl;
+            return false;
+        }
+    }
+
     // load part xmls
     if (partXmls_.empty()) {
         if (!load_part_xmls()) {

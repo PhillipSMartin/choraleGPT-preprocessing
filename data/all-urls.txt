@@ -21,6 +21,7 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002007B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002011B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002506B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002606B_.xml
+// https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002706B_.xml five parts
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002806B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/002908B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/003006B_.xml
@@ -35,7 +36,7 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/003907B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004003B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004006B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004008B_.xml
-https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004106B_.xml
+// https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004106B_.xml too many parts
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004207B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004311B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/004407B_.xml
@@ -143,7 +144,7 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/016506B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/016606B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/016806B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/016907B_.xml
-https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/017106B_.xml
+//https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/017106B_.xml too many parts
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/017206B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/017405B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/017507B_.xml
@@ -167,6 +168,7 @@ https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/019707Ba.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/019710B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022602B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022701B_.xml
+// https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022703B_.xml five parts
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022707B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022711B_.xml
 https://bach-chorales-in-musicxml.s3.us-east-1.amazonaws.com/022902B_.xml
