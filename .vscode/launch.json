@@ -29,7 +29,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/inputXml",
-            "args": ["../data/some-urls.txt", "-satb", "-f", "../outputs/output.txt"],
+            "args": ["../data/12306B.xml", "-satb", "-f", "../outputs/output.txt"],
  //          "args": ["../data/106B.xml", "-satb"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",

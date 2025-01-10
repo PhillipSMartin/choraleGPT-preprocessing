@@ -33,8 +33,13 @@ int main( int argc, char** argv )
     bool _done = false;
     std::string _line;
     std::vector<std::unique_ptr<Part>> _parts;
+
+    unsigned int _successes{0};
+    unsigned int _attempts{0};
     while (!_done) {
+        _attempts++;
         _parts.clear();
+
         for (size_t _i = 0; _i < 4; _i++) {
             if (!std::getline(_partEncodings, _line)) {
                 // if we haven't started a new chorale, we're done
@@ -59,7 +64,6 @@ int main( int argc, char** argv )
             _chorale.load_parts( _parts );   
             _chorale.combine_parts( _args.verbose() );
  
-
             if (_args.has_output_file()) {
                 if (auto& _part = _chorale.get_part("Combined") ) {
                     _outputFile << *_part;
@@ -69,8 +73,12 @@ int main( int argc, char** argv )
                     return 1;
                 }
             }
+
+            _successes++;
         }
     }
+
+    std::cout << "Successfully processsed " << _successes << " of " << _attempts << " chorales" << std::endl;
 
     _partEncodings.close();
     _outputFile.close();

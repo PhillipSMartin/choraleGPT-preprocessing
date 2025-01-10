@@ -96,11 +96,14 @@ int main( int argc, char** argv ) {
         }
 
         // process each musicXml source in list
+        unsigned int _successes{0};
+        unsigned int _attempts{0};
         for (const std::string& _xmlSource : _xmlSources) {
             if (_xmlSource.empty() || _xmlSource.substr(0,2) == "//") {
                 continue;
             }
             
+            _attempts++;
             Chorale _chorale{ _xmlSource };
 
             // load xml for this chorale
@@ -128,8 +131,11 @@ int main( int argc, char** argv ) {
                 }
             }
 
+            _successes++;
             std::cout << "Encoded " << _chorale.get_BWV() << std::endl;
         }
+
+        std::cout << "Successfully encoded " << _successes << " of " << _attempts << " chorales" << std::endl;
 
         return 0;
     }

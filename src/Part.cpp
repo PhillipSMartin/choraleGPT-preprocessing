@@ -40,32 +40,46 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
 }
 
 bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
-    // // for debugging
-    // XmlUtils::printElement( attributes );
+    // sample xml:
+    //
+    //   <attributes>
+    //     <divisions>2</divisions>
+    //     <key>
+    //       <fifths>0</fifths>
+    //       <mode>major</mode>
+    //     </key>
+    //     <time symbol="common">
+    //       <beats>4</beats>
+    //       <beat-type>4</beat-type>
+    //     </time>
+    //     ...
+    //   </attributes>
 
-    XMLElement* key = try_get_child( attributes, "key" );
-    XMLElement* fifths = try_get_child( key, "fifths" ); 
-    if (fifths) {
-        key_ = atoi( fifths->GetText() );   
+    // get all elements of interest
+    XMLElement* _key = try_get_child( attributes, "key" );
+    XMLElement* _fifths = _key ? try_get_child( _key, "fifths" ) : nullptr; 
+    XMLElement* _mode = _fifths ? try_get_child( _key, "mode" ) : nullptr;
+    XMLElement* _time = _mode ?try_get_child( attributes, "time" ) : nullptr;
+    XMLElement* _beats = _time ? try_get_child(_time, "beats" ) : nullptr;
+    XMLElement* _beatType = _beats ? try_get_child(_time, "beat-type" ) : nullptr;
+    XMLElement* _divisions = _beatType ? try_get_child( attributes, "divisions" ) : nullptr;
+    if (!_divisions) {
+        return false;
     }
 
-    XMLElement* mode = try_get_child( key, "mode" );
-    if (mode) {
-        mode_ = (strcmp( mode->GetText(), "major" ) == 0) ? Mode::MAJOR : Mode::MINOR;
-    }
-    
-    XMLElement* time = try_get_child( attributes, "time" );
-    XMLElement* beats = try_get_child(time, "beats" );
-    if (beats) {
-        beatsPerMeasure_ = atoi( beats->GetText() );
-    }
+    // key and mode
+    key_ = atoi( _fifths->GetText() );   
+    mode_ = (strcmp( _mode->GetText(), "major" ) == 0) ? Mode::MAJOR : Mode::MINOR;
 
-    XMLElement* divisions = try_get_child( attributes, "divisions" );
-    if (divisions) {
-        subBeatsPerBeat_ = atoi( divisions->GetText() );
-    }
+    // time signature
+    beatsPerMeasure_ = atoi( _beats->GetText() );
+    int _beatTypeValue = atoi( _beatType->GetText() );
 
-    return fifths && mode && beats && divisions;
+    // number of divisions per quarter note
+    int _divisionsValue = atoi( _divisions->GetText() );
+    subBeatsPerBeat_ = _divisionsValue * 4 / _beatTypeValue;
+
+    return true;
 }
 
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
