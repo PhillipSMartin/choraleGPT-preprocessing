@@ -12,26 +12,27 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
     }
 
     // Get the first measure
-    XMLElement* measure = try_get_child( part, "measure" );
-    if (!measure) {
+    XMLElement* _measure = try_get_child( part, "measure" );
+    XMLElement* _attributes = _measure ? try_get_child( _measure, "attributes" ) : nullptr;
+    if (!_attributes) {
         return false;
     }
 
     // Get key and durations
-    if (!parse_attributes( try_get_child( measure, "attributes" ) )) {
+    if (!parse_attributes( _attributes )) {
         return false;
     }
 
     // Construct encodings_ from each measure
     std::unique_ptr<Encoding> _token = std::make_unique<Marker>( Marker::MarkerType::SOC );
     push_encoding( _token );
-    while (measure) {
-        if (!parse_measure( measure )) {
+    while (_measure) {
+        if (!parse_measure( _measure )) {
             return false;
         }
         _token = std::make_unique<Marker>( Marker::MarkerType::EOM );
         push_encoding( _token );
-        measure = measure->NextSiblingElement( "measure" );
+        _measure = _measure->NextSiblingElement( "measure" );
     }
 
     _token = std::make_unique<Marker>( Marker::MarkerType::EOC );

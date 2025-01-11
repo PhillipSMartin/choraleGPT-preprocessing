@@ -105,9 +105,13 @@ bool Note::parse_xml( XMLElement* note )  {
     isValid_ = false;
     XMLElement* _pitch = note ? note->FirstChildElement( "pitch" ) : nullptr;
     if (_pitch) {
+
+        // get elements
         XMLElement* _step = XmlUtils::try_get_child( _pitch, "step" );
         XMLElement* _alter = _pitch->FirstChildElement( "alter" );
         XMLElement* _octave = XmlUtils::try_get_child( _pitch, "octave" );
+        XMLElement* _tie = XmlUtils::try_get_child( note, "tie", /* verbose= */ false );
+
         if (_step && _octave) {
             pitch_ = _step->GetText()[0];
             accidental_ =  _alter ? std::stoi( _alter->GetText() ) : 0;
@@ -119,7 +123,7 @@ bool Note::parse_xml( XMLElement* note )  {
         if (tie_started_) {
             tied_ = true;
         }
-        XMLElement* _tie = XmlUtils::try_get_child( note, "tie", /* verbose= */ false );
+        
         if (_tie) {
             const char* _type = _tie->Attribute( "type" );
             if (_type && strcmp( _type, "start" ) == 0) {
