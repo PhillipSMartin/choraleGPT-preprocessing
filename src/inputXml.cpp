@@ -135,7 +135,12 @@ int main( int argc, char** argv ) {
             std::cout << "Encoded " << _chorale.get_BWV() << std::endl;
         }
 
-        std::cout << "Successfully encoded " << _successes << " of " << _attempts << " chorales" << std::endl;
+        std::cout << "Successfully encoded " << _successes  
+            << (_successes == 1 ? " chorale" : " chorales") << std::endl;
+        if (_attempts > _successes) {
+            std::cout << "Failed to encode " << _attempts - _successes 
+                << ((_attempts - _successes) == 1 ? " chorale" : " chorales") << std::endl;
+        }
 
         return 0;
     }

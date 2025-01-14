@@ -145,7 +145,7 @@ class Part {
         bool parse_measure( tinyxml2::XMLElement* measure );
 
         // returns the specified child of a given XML element or nullptr
-        tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName );
+        tinyxml2::XMLElement* try_get_child( tinyxml2::XMLElement* parent, const char* childName, bool verbose = true );
 
         // helper functions for parse_encoding()
 

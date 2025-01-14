@@ -78,9 +78,14 @@ int main( int argc, char** argv )
         }
     }
 
-    std::cout << "Successfully processsed " << _successes << " of " << _attempts << " chorales" << std::endl;
-
+        std::cout << "Successfully processed " << _successes  
+            << (_successes == 1 ? " chorale" : " chorales") << std::endl;
+    if (_attempts > _successes) {
+        std::cout << "Failed to process " << _attempts - _successes 
+            << ((_attempts - _successes) == 1 ? " chorale" : " chorales") << std::endl;
+    }    
     _partEncodings.close();
+
     _outputFile.close();
     return 0;
 }

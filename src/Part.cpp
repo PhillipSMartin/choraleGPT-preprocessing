@@ -86,6 +86,13 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     XMLElement* _note = try_get_child( measure, "note" );
     while (_note) {
+
+        // ignore note with a chord element
+        if (try_get_child( _note, "chord", /*verbose - */ false )) {
+            _note = _note->NextSiblingElement( "note" );
+            continue;
+        }
+
         std::unique_ptr<Encoding> _token = std::make_unique<Note>( _note  );       
         if (!_token->is_valid()) {
             std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
@@ -189,9 +196,9 @@ std::ostream& operator <<( std::ostream& os, const Part& part) {
     return os;
 }
 
-XMLElement* Part::try_get_child( XMLElement* parent, const char* childName ) {
-    XMLElement* _xmlElement = XmlUtils::try_get_child( parent, childName );
-    if (!_xmlElement) { 
+XMLElement* Part::try_get_child( XMLElement* parent, const char* childName, bool verbose /* = true */ ) {
+    XMLElement* _xmlElement = XmlUtils::try_get_child( parent, childName, verbose );
+    if (verbose && !_xmlElement) { 
         std::cerr << "Unable to process " << partName_ << " for " <<  id_ << std::endl;
     }
     return _xmlElement;
@@ -308,9 +315,7 @@ void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
                 currentMeasure_ = 0;    // first full measure will be measure 1
                 handle_upbeat();
             }
-            else {
-                return; // ignore EOM for an incomplete measure after the first
-            }
+            // allow EOM for an incomplete measure after the first 
         }
         currentMeasure_++;
         nextTick_ = 1;
