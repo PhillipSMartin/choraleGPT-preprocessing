@@ -2,10 +2,10 @@
 
 
 std::ostream& CombinedPart::show_current_tokens( std::ostream& os ) const {
-    for (size_t i = 0; i < NUM_PARTS; ++i) {
-        os << parts_[i]->get_part_name()  << ": ";
-        if (currentTokens_[i]) {
-            os << currentTokens_[i]->to_string();
+    for (auto& _part : parts_) {
+        os << _part->part_name()  << ": ";
+        if (_part->currentToken) {
+            os << _part->currentToken->to_string();
         }
         else {
             os << "<NULL>"; 
@@ -21,21 +21,26 @@ bool CombinedPart::get_next_tokens() {
     std::string _incompatibleTokenPart{};
 
     // pop next token if needed
-    for (size_t _i = 0; _i < NUM_PARTS; ++_i) {
-        if (needNewToken_[_i]) {
-            if (currentTokens_[_i] = parts_[_i]->pop_encoding()) {
+    Encoding* _sopranoToken = nullptr; // save soprano token for compatibility check
+
+    for (auto& _part : parts_) {
+        if (_part->needNewToken) {
+            if (_part->get_next_token()) {
                 // don't need a new token unless this is a marker
-                needNewToken_[_i] = currentTokens_[_i]->is_marker();
+                _part->needNewToken = _part->currentToken->is_marker();
             }
             else { 
                 // if we have exhausted the tokens for this part, we have a problem
-                _missingTokenPart = parts_[_i]->get_part_name();  
+                _missingTokenPart = _part->part_name();  
             }
         }
         // check if we have an inconsistency
         // equality means tokens are compatible (not identical)
-        if (currentTokens_[_i] != currentTokens_[0]) {
-            _incompatibleTokenPart = parts_[_i]->get_part_name();    
+        if (!_sopranoToken) {
+            _sopranoToken = _part->currentToken.get();
+        }
+        else if (*_sopranoToken != *_part->currentToken) {
+            _incompatibleTokenPart = _part->part_name();
         }
     }
 
@@ -52,59 +57,60 @@ bool CombinedPart::get_next_tokens() {
     return true;
 }
 
-void CombinedPart::reduce_duration(Note& note, const unsigned int reduction, bool& needNewToken) {
+bool CombinedPart::reduce_duration(Note& note, const unsigned int reduction) {
     // calcuate number of sub-beats left
-    int _newDuration = note.get_pitch();
+    int _newDuration = note.get_duration();
     _newDuration -= reduction;
 
     // if we are done with this note, get another next time
     if (_newDuration <= 0) {
-        needNewToken = true;
+        return true;
     }
     // otherwise next note is tied to this one
     else {
         note.set_duration( _newDuration );
         note.set_tied( true );
+        return false;
     }
 };
 
-void CombinedPart::process_marker( const std::unique_ptr<Encoding>& token, bool verbose, bool noEOM  ) {
+bool CombinedPart::process_marker( std::unique_ptr<Encoding>& token, bool verbose, bool noEOM  ) {
     if (token->is_EOM() && noEOM) {
         if (verbose) {
             std::cout << "Skipping EOM" << std::endl;
         }
+        return false;
     }
     else {
-        push_encoding( currentTokens_[0] );
+        push_encoding( token );
         if (verbose) {
             std::cout << "Added marker: " 
                 << location_to_string( get_last_encoding().get() ) 
                 << ": " << get_last_encoding()->to_string() << std::endl;  
         } 
+        return get_last_encoding()->is_EOC();
     }  
 }
 
 void CombinedPart::add_chord( bool verbose ) {
-    // collect the notes from each part and find the shortest duration
-    Note _notes[NUM_PARTS];
-    unsigned int _shortestDuration = currentTokens_[0]->get_duration();
-
-    for ( size_t _i = 0; _i < NUM_PARTS; _i++ ) {
-        _notes[_i] = *dynamic_cast<Note*>( currentTokens_[_i].get() );
-        if (_notes[_i].get_duration() < _shortestDuration) {
-            _shortestDuration = _notes[_i].get_duration();
-        }
+    // find the shortest duration
+    unsigned int _shortestDuration = UINT_MAX;
+    for ( auto& _part : parts_ ) {
+        _shortestDuration = std::min( _shortestDuration, _part->currentToken->get_duration() );
     } 
 
-    // buile the chord and add it to the encoding stack
+    // reduce each note's duration to match shortest and save it in a vector
+    std::vector<Note> _notes;
+    for ( auto& _part : parts_ ) {
+        Note& _note = dynamic_cast<Note&>( *_part->currentToken );
+        _part->needNewToken = reduce_duration( _note, _shortestDuration );
+        _notes.emplace_back( _note );
+    }
+    
+    // build the chord and add it to the encoding stack
     auto chord = std::make_unique<Chord>( _notes, _shortestDuration );
     auto encoding = std::unique_ptr<Encoding>( chord.release() );
     push_encoding( encoding );
-
-    // reduce durations
-    for ( size_t _i = 0; _i < NUM_PARTS; _i++ ) {
-        reduce_duration( _notes[_i], _shortestDuration, needNewToken_[_i] );
-    }
 
     if (verbose) {
         std::cout << "Added chord " 
@@ -114,20 +120,22 @@ void CombinedPart::add_chord( bool verbose ) {
 }
 
 
-bool CombinedPart::build( bool verbose, bool noEOM ) {
+bool CombinedPart::build( bool verbose, bool noEOM )  {           
+
     while (true) {
         // get new tokens if necessary
         if (!get_next_tokens()) {
+
+            // we encountered some inconcistency
+            // print out the current tokens and return false
             show_current_tokens( std::cerr );
             return false;
         }
 
         // if we have a Marker, add it to the combined parts unless it is EOM and noEOM was specified
-        if (currentTokens_[0]->is_marker() ) {
-            process_marker( currentTokens_[0], verbose, noEOM );
-
-             // if it is EOC, we are done
-            if (currentTokens_[0]->is_EOC()) {
+        if (parts_[0]->currentToken->is_marker() ) {
+            if (process_marker( parts_[0]->currentToken, verbose, noEOM )) {
+                // if it's an EOC, we are done
                 return true;
             }  
         }

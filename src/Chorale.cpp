@@ -274,7 +274,7 @@ bool Chorale::combine_parts( bool verbose, bool noEOM ) {
     parts_["Combined"] = std::make_unique<CombinedPart>( _sopranoPart, _altoPart, _tenorPart, _bassPart );
     auto& _combinedPart = get_part("Combined");   
     
-    dynamic_cast<CombinedPart*>(  _combinedPart.get() )->build( verbose, noEOM );
+    return dynamic_cast<CombinedPart*>(  _combinedPart.get() )->build( verbose, noEOM );
 
     // // add a new combined part
     // auto& _combinedParts = get_part("Combined");   
@@ -419,5 +419,5 @@ bool Chorale::combine_parts( bool verbose, bool noEOM ) {
     //     }
     // }
 
-    return true;
+    // return true;
 }

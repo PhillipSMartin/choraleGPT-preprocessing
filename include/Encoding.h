@@ -183,10 +183,9 @@ class Chord : public Encoding {
         std::vector<Note> notes_;
 
     public:
-        template<size_t N>
-        Chord(const Note (&notes)[N], unsigned int duration) :
+        Chord(const std::vector<Note>& notes, unsigned int duration) :
             Encoding{duration, CHORD},
-            notes_{notes, notes + N} {}
+            notes_{notes.begin(), notes.end()} {}
 
         std::unique_ptr<Encoding> clone() const override {
             return std::make_unique<Chord>(*this);

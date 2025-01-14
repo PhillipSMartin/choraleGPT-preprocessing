@@ -62,19 +62,20 @@ int main( int argc, char** argv )
             _attempts++;
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-            _chorale.combine_parts( _args.verbose(), _args.noEOM() );
- 
-            if (_args.has_output_file()) {
-                if (auto& _part = _chorale.get_part("Combined") ) {
-                    _outputFile << *_part;
+            if (_chorale.combine_parts( _args.verbose(), _args.noEOM() ))
+            {
+                if (_args.has_output_file()) {
+                    if (auto& _part = _chorale.get_part("Combined") ) {
+                        _outputFile << *_part;
+                    }
+                    else {
+                        std::cerr << "Combined parts not found for " << _chorale.get_BWV() << std::endl;
+                        return 1;
+                    }
                 }
-                else {
-                    std::cerr << "Combined parts not found for " << _chorale.get_BWV() << std::endl;
-                    return 1;
-                }
-            }
 
-            _successes++;
+                _successes++;
+            }
         }
     }
 
