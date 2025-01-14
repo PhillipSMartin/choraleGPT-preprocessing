@@ -59,7 +59,7 @@ class Chorale {
         bool encode_parts();  
 
         // combine individual parts int parts_ into a new combined Part object with Chords instead of Notes 
-        bool combine_parts( bool verbose = false );   
+        bool combine_parts( bool verbose = false, bool noEOM = false );   
 
         // getters
         std::string get_BWV() const { return bwv_; }

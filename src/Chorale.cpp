@@ -263,7 +263,7 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
     return (_it != parts_.end()) ? _it->second : nullPart_;
 }
 
-bool Chorale::combine_parts( bool verbose ) {
+bool Chorale::combine_parts( bool verbose, bool noEOM ) {
     parts_["Combined"] = std::make_unique<Part>( bwv_, title_, "Combined" );
 
     // get tokens for each part
@@ -353,20 +353,27 @@ bool Chorale::combine_parts( bool verbose ) {
             return false;
         }
 
-        // if we have a Marker, add it to the combined parts
+        // if we have a Marker, add it to the combined parts unless it is EOM and noEOM was specified
         if (_sopranoToken->is_marker() ) {
             // if it is EOC, we are done
             if (_sopranoToken->is_EOC()) {
                 _done = true;
             }
 
-            _combinedParts->push_encoding( _sopranoToken );
-            auto& _pushedToken = _combinedParts->get_last_encoding();
-            if (verbose) {
-                std::cout << "Added marker: " 
-                    << _combinedParts->location_to_string( _pushedToken.get() ) 
-                    << ": " << _pushedToken->to_string() << std::endl;  
-            }       
+            if (_sopranoToken->is_EOM() && noEOM) {
+                if (verbose) {
+                    std::cout << "Skipping EOM" << std::endl;
+                }
+            }
+            else {
+                _combinedParts->push_encoding( _sopranoToken );
+                auto& _pushedToken = _combinedParts->get_last_encoding();
+                if (verbose) {
+                    std::cout << "Added marker: " 
+                        << _combinedParts->location_to_string( _pushedToken.get() ) 
+                        << ": " << _pushedToken->to_string() << std::endl;  
+                } 
+            }      
 
             _needSopranoToken = _needAltoToken = _needTenorToken = _needBassToken = true;
 

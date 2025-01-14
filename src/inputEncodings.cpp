@@ -37,8 +37,7 @@ int main( int argc, char** argv )
     unsigned int _successes{0};
     unsigned int _attempts{0};
     while (!_done) {
-        _attempts++;
-        _parts.clear();
+         _parts.clear();
 
         for (size_t _i = 0; _i < 4; _i++) {
             if (!std::getline(_partEncodings, _line)) {
@@ -60,9 +59,10 @@ int main( int argc, char** argv )
         } 
 
         if (!_done) {
+            _attempts++;
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-            _chorale.combine_parts( _args.verbose() );
+            _chorale.combine_parts( _args.verbose(), _args.noEOM() );
  
             if (_args.has_output_file()) {
                 if (auto& _part = _chorale.get_part("Combined") ) {
@@ -78,8 +78,8 @@ int main( int argc, char** argv )
         }
     }
 
-        std::cout << "Successfully processed " << _successes  
-            << (_successes == 1 ? " chorale" : " chorales") << std::endl;
+    std::cout << "Successfully processed " << _successes  
+        << (_successes == 1 ? " chorale" : " chorales") << std::endl;
     if (_attempts > _successes) {
         std::cout << "Failed to process " << _attempts - _successes 
             << ((_attempts - _successes) == 1 ? " chorale" : " chorales") << std::endl;

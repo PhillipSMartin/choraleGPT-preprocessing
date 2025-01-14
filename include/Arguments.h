@@ -28,6 +28,7 @@ class Arguments {
         args::Flag tenor_{parser_, "Tenor", "Parse the tenor part", {'t', "tenor"}};
         args::Flag bass_{parser_, "Bass", "Parse the bass part", {'b', "bass"}};
         args::Flag verbose_{parser_, "Verbose", "Verbose output", {'v', "verbose"}};
+        args::Flag noEOM_{parser_, "No EOM", "Don't generate end-of-measure markers", {"noEOM"}};
         args::ValueFlag<std::string> outputFileParm_{parser_, "output", "Output file path", {'f', "file"}};
 
         // Store references to flags in vector
@@ -70,4 +71,5 @@ class Arguments {
         bool has_output_file() const { return outputFileParm_.Matched(); }
         std::string get_output_file() const { return outputFile_; };
         bool verbose() const { return verbose_.Get(); }
+        bool noEOM() const { return noEOM_.Get(); }
 };
