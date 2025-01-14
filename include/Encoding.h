@@ -1,6 +1,7 @@
 #pragma once
 #include "TranspositionRule.h"
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <tinyxml2.h>
@@ -36,7 +37,7 @@ class Encoding {
 
     public:
         virtual ~Encoding() = default;
-        
+
         // test type
         bool is_valid() const { return isValid_; }
         bool is_note() const { return tokenType_ == NOTE; }
@@ -61,6 +62,9 @@ class Encoding {
             tickNumber_ = tickNumber;
         }
 
+        virtual std::unique_ptr<Encoding> clone() const {
+            return std::make_unique<Encoding>(*this);
+        }         
         virtual std::string to_string() const { return std::to_string( duration_ ); }
 
         // two markers are equal only if they have the same marker type
@@ -95,6 +99,9 @@ class Marker : public Encoding {
             markerType_{markerType} {}
         MarkerType get_marker_type() const { return markerType_; }
 
+        std::unique_ptr<Encoding> clone() const override {
+            return std::make_unique<Marker>(*this);
+        }
         std::string to_string() const override;
 
         bool operator==(const Marker& other) const {
@@ -141,7 +148,6 @@ class Note : public Encoding {
                 isValid_ = false;
             }       
         }
-    
 
         // getters
         char get_pitch() const { return pitch_; }
@@ -152,6 +158,9 @@ class Note : public Encoding {
         // setters
         void set_tied( bool tie ) { tied_ = tie; }
 
+        std::unique_ptr<Encoding> clone() const override {
+            return std::make_unique<Note>(*this);
+        }           
         std::string to_string() const override {
             return pitch_to_string() + '.' + Encoding::to_string(); 
         }  
@@ -179,5 +188,8 @@ class Chord : public Encoding {
             Encoding{duration, CHORD},
             notes_{notes, notes + N} {}
 
+        std::unique_ptr<Encoding> clone() const override {
+            return std::make_unique<Chord>(*this);
+        }
         std::string to_string() const;
 };

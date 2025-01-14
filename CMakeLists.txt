@@ -22,6 +22,7 @@ add_executable(inputXml
     src/inputXml.cpp
     src/Arguments.cpp
     src/Chorale.cpp
+    src/CombinedPart.cpp
     src/Encoding.cpp
     src/Part.cpp
     src/XmlUtils.cpp
@@ -31,6 +32,7 @@ add_executable(inputEncodings
     src/inputEncodings.cpp
     src/Arguments.cpp
     src/Chorale.cpp
+    src/CombinedPart.cpp
     src/Encoding.cpp
     src/Part.cpp
     src/XmlUtils.cpp

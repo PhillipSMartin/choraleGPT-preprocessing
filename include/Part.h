@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Encoding.h"
-#include "TranspositionRule.h"
 #include "XmlUtils.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <tinyxml2.h>
 #include <vector>
-#include <memory>
+
 
 // class containing info about a single voice part
 class Part {
@@ -89,7 +89,35 @@ class Part {
 
     public:
         Part() = default;
+        virtual ~Part() = default;
+
         Part(const std::string& id, const std::string& title, const std::string& partName) : id_{id}, title_{title}, partName_{partName} {}
+        Part(const Part& other) {
+            *this = other;
+        }
+        Part(Part&& other) noexcept = default;
+
+        Part& operator=(const Part& other) {
+            if (this != &other) {
+                id_ = other.id_;
+                title_ = other.title_;
+                partName_ = other.partName_;
+                beatsPerMeasure_ = other.beatsPerMeasure_;
+                subBeatsPerBeat_ = other.subBeatsPerBeat_;
+                key_ = other.key_;
+                mode_ = other.mode_;
+                currentMeasure_ = other.currentMeasure_;
+                nextTick_ = other.nextTick_;
+                
+                encodings_.clear();
+                for (const auto& encoding : other.encodings_) {
+                    encodings_.push_back(encoding->clone());
+                }
+            }
+            return *this;
+        }
+
+        Part& operator=(Part&& other) noexcept = default;
 
         // these methods print an error to cerr and return false if they faile
 
@@ -102,6 +130,7 @@ class Part {
 
         // getters
         std::string get_id() const { return id_; }
+        std::string get_title() const { return title_; }
         std::string get_part_name() const { return partName_; }
         std::string get_header() const;
         int get_beats_per_measure() const { return beatsPerMeasure_; }

@@ -301,11 +301,12 @@ std::unique_ptr<Encoding> Part::pop_encoding() {
         return nullptr;
     }
     else {
-        auto first = std::move(encodings_.front());
+        auto first = std::move( encodings_.front() );
         encodings_.erase(encodings_.begin());
         return first;
     }
 }
+
 void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
 
     // if the encoding is EOM, bump measure number and reset tick
@@ -325,7 +326,7 @@ void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
     encoding->set_location( currentMeasure_, nextTick_ );
     nextTick_ += encoding->get_duration();
 
-    encodings_.push_back( std::move(encoding) );
+    encodings_.push_back( std::move( encoding ) );
 }
 
 int Part::ticks_remaining() const {
