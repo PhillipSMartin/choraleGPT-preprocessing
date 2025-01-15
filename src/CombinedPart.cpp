@@ -103,8 +103,9 @@ void CombinedPart::add_chord( bool verbose ) {
     std::vector<Note> _notes;
     for ( auto& _part : parts_ ) {
         Note& _note = dynamic_cast<Note&>( *_part->currentToken );
-        _part->needNewToken = reduce_duration( _note, _shortestDuration );
         _notes.emplace_back( _note );
+        _part->needNewToken = reduce_duration( _note, _shortestDuration );
+
     }
     
     // build the chord and add it to the encoding stack

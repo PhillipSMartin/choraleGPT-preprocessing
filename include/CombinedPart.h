@@ -41,6 +41,11 @@ class CombinedPart : public Part {
             parts_[1] = std::make_unique<PartWrapper>( *alto );
             parts_[2] = std::make_unique<PartWrapper>( *tenor );
             parts_[3] = std::make_unique<PartWrapper>( *bass );
+
+            beatsPerMeasure_ = soprano->get_beats_per_measure();
+            subBeatsPerBeat_ = soprano->get_sub_beats();
+            key_ = soprano->get_key();
+            mode_ = soprano->get_mode();
         }
 
         bool build( bool verbose, bool noEOM );
