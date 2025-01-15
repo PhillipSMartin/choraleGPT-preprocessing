@@ -2,6 +2,7 @@
 
 
 std::ostream& CombinedPart::show_current_tokens( std::ostream& os ) const {
+    os << "Current measure: " << currentMeasure_  << "." <<  nextTick_ << std::endl;
     for (auto& _part : parts_) {
         os << _part->part_name()  << ": ";
         if (_part->currentToken) {
@@ -105,7 +106,6 @@ void CombinedPart::add_chord( bool verbose ) {
         Note& _note = dynamic_cast<Note&>( *_part->currentToken );
         _notes.emplace_back( _note );
         _part->needNewToken = reduce_duration( _note, _shortestDuration );
-
     }
     
     // build the chord and add it to the encoding stack

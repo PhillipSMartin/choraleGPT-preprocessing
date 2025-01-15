@@ -62,8 +62,7 @@ int main( int argc, char** argv )
             _attempts++;
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-            if (_chorale.combine_parts( _args.verbose(), _args.noEOM() ))
-            {
+            if (_chorale.combine_parts( _args.verbose(), _args.noEOM() )) {
                 if (_args.has_output_file()) {
                     if (auto& _part = _chorale.get_part("Combined") ) {
                         _outputFile << *_part;
@@ -75,6 +74,9 @@ int main( int argc, char** argv )
                 }
 
                 _successes++;
+            }
+            else {
+                std::cerr << "Failed to process " << _chorale.get_BWV() << std::endl;
             }
         }
     }

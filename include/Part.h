@@ -30,7 +30,7 @@ class Part {
         static inline const std::string MAJOR_STR = "Major";
         static inline const std::string MINOR_STR = "Minor";
 
-    private:
+    protected:
         // for converting key_ to a displayable string
         static constexpr const char* circle_of_fifths_[] = {
            "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#",
@@ -48,7 +48,6 @@ class Part {
         std::string title_;         // title of piece if provided, e.g. "Jesu, meine Freude"
         std::string partName_;      // name of part within the piece, e.g. "Soprano"     
 
-protected:
         // if we are in 4/4 time, beatsPerMeasure_ is 4
         // subBeatsPerBeat_ represents the granularity
         // if the shortest note in 4/4 time is an eighth note, subBeatsPerBeat_ is 2
@@ -61,7 +60,7 @@ protected:
         int key_ = 0;   
         Mode mode_ = Mode::MAJOR;
 
-private:
+
         // encodings_ is a vector of words
         //  SOC: always the first word
         //  a note is presented in the format <pitch>.<octave>.<duration>

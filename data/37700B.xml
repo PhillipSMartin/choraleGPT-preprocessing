@@ -1353,7 +1353,6 @@ www.jsbchorales.net</credit-words>
         <stem default-y="-10">up</stem>
       </note>
       <note default-x="98">
-        <chord/>
         <pitch>
           <step>D</step>
           <octave>4</octave>
