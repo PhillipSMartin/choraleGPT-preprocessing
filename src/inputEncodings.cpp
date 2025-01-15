@@ -64,7 +64,7 @@ int main( int argc, char** argv )
             _chorale.load_parts( _parts );   
             if (_chorale.combine_parts( _args.verbose(), _args.noEOM() )) {
                 if (_args.has_output_file()) {
-                    if (auto& _part = _chorale.get_part("Combined") ) {
+                    if (auto& _part = _chorale.get_combined_part()) {
                         _outputFile << *_part;
                     }
                     else {

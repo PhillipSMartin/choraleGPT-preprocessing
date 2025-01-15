@@ -1,5 +1,5 @@
 #pragma once
-#include "Part.h"
+#include "CombinedPart.h"
 #include "XmlUtils.h"
 
 #include <map>
@@ -28,8 +28,11 @@ class Chorale {
 
         // maps
         std::map<std::string, std::string> partIds_;
-        std::map<std::string, tinyxml2::XMLElement*> partXmls_; // the xml elements for each part
-        std::map<std::string, std::unique_ptr<Part>> parts_;    // the Part objects for each part
+        std::map<std::string, tinyxml2::XMLElement*> partXmls_; // the xml elements for each individual part
+        std::map<std::string, std::unique_ptr<Part>> parts_;    // the Part objects for each individual part
+
+        // all parts combined
+        std::unique_ptr<CombinedPart> combinedPart_;
 
         // an ordered list of partIds in case the xml uses non-standard part ids and names
         static inline std::map<std::string, size_t> partNameIndices_ = { {"Soprano", 0},
@@ -58,7 +61,7 @@ class Chorale {
         // encode the xml in partXmls_ into the associated Part objects in parts_
         bool encode_parts();  
 
-        // combine individual parts int parts_ into a new combined Part object with Chords instead of Notes 
+        // combine individual parts into a new combined Part object with Chords instead of Notes 
         bool combine_parts( bool verbose = false, bool noEOM = false );   
 
         // getters
@@ -66,6 +69,7 @@ class Chorale {
         std::string get_title() const { return title_; }
         tinyxml2::XMLElement* get_part_xml( const std::string& partName ) const;
         std::unique_ptr<Part>& get_part( const std::string& partName );
+        std::unique_ptr<CombinedPart>& get_combined_part() { return combinedPart_; }
  
     private:
         // --- helper function from load_xml() ---

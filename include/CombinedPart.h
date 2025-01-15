@@ -1,3 +1,4 @@
+#pragma once
 #include "Part.h"
 
 #include <array>

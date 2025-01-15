@@ -1481,7 +1481,6 @@
         <beam number="1">end</beam>
       </note>
       <note>
-        <chord/>
         <pitch>
           <step>G</step>
           <alter>1</alter>
@@ -1578,7 +1577,6 @@
         <beam number="1">begin</beam>
       </note>
       <note>
-        <chord/>
         <pitch>
           <step>F</step>
           <alter>1</alter>
@@ -3209,7 +3207,6 @@
         <type>quarter</type>
       </note>
       <note>
-        <chord/>
         <pitch>
           <step>E</step>
           <octave>3</octave>
@@ -4204,7 +4201,6 @@
         <beam number="1">begin</beam>
       </note>
       <note>
-        <chord/>
         <pitch>
           <step>E</step>
           <octave>3</octave>
