@@ -53,7 +53,7 @@ class Chorale {
         // build parts_, mapping part names to empty Part objects
         void load_parts( const std::vector<std::string>& partsToParse ); 
 
-        // buildl parts_ from existing Part objects
+        // build parts_ from existing Part objects
         void load_parts( std::vector<std::unique_ptr<Part>>& parts ); 
         
         // --- process functions ---

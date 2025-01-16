@@ -6,8 +6,14 @@
 #include <iostream>
 #include <string>
 
-// no parts for BWVs 41.6 140.7 171.6 253.0
 
+/**
+ * Reads a list of XML sources from a text file.
+ *
+ * @param xmlSource The path or URL to the text file containing the list of XML sources.
+ * @param xmlSourceList The vector to store the read XML sources.
+ * @return `true` if at least one XML source was read, `false` otherwise.
+ */
 bool read_xml_source_list( const std::string& xmlSource, std::vector<std::string>& xmlSourceList ) {
     std::ifstream _xmlSourceListFile{xmlSource};
     if (!_xmlSourceListFile) {
@@ -23,6 +29,15 @@ bool read_xml_source_list( const std::string& xmlSource, std::vector<std::string
     return xmlSourceList.size() > 0;
 }
 
+/**
+ * Retrieves a vector of XML sources based on the provided arguments.
+ *
+ * If the input source type is a text file, the function reads the list of XML sources from the file.
+ * Otherwise, the function assumes the input source is a single file or URL and adds it to the vector.
+ *
+ * @param args The command-line arguments containing the input source information.
+ * @return A vector of XML sources to be processed.
+ */
 std::vector<std::string> get_xml_sources( const Arguments& args ) {
     std::vector<std::string> _xmlSources;
     switch (args.get_input_source_type( args.get_input_source() )) {
@@ -40,6 +55,13 @@ std::vector<std::string> get_xml_sources( const Arguments& args ) {
     return _xmlSources;
 }
 
+/**
+ * Prints the specified parts of a Chorale to the console.
+ *
+ * @param args The command-line arguments containing the parts to be printed.
+ * @param chorale The Chorale object containing the parts to be printed.
+ * @return `true` if the printing was successful, `false` otherwise.
+ */
 bool print_to_console( const Arguments& args, Chorale& chorale ) {
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
@@ -56,6 +78,18 @@ bool print_to_console( const Arguments& args, Chorale& chorale ) {
     return true;
 }
 
+/**
+ * Exports the specified parts of a Chorale to the provided output file.
+ *
+ * This function iterates through the parts to be exported, as specified in the provided Arguments object,
+ * and writes each part to the output file. If a part is not found, an error message is printed to the
+ * standard error stream.
+ *
+ * @param args The command-line arguments containing the parts to be exported.
+ * @param chorale The Chorale object containing the parts to be exported.
+ * @param outputFile The output file stream to write the parts to.
+ * @return `true` if the export was successful, `false` otherwise.
+ */
 bool export_to_file( const Arguments& args, Chorale& chorale, std::ofstream& outputFile ) {
     // process each requested part
     for (std::string _partName : args.get_parts_to_parse() ) {
@@ -71,6 +105,14 @@ bool export_to_file( const Arguments& args, Chorale& chorale, std::ofstream& out
     return true;
 }
 
+/**
+ * The main entry point of the application. This function processes command-line arguments, reads and encodes
+ *  MusicXML files, and either prints the encoded parts to the console or exports them to a file.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The array of command-line arguments.
+ * @return 0 if the processing was successful, 1 otherwise.
+ */
 int main( int argc, char** argv ) { 
     try {
         Arguments _args;

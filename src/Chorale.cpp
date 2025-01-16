@@ -16,6 +16,15 @@ unsigned int Chorale::lastBWV_{0};
 char Chorale::lastModifier_{'`'};
 std::unique_ptr<Part> Chorale::nullPart_ = nullptr;
 
+/**
+ * Extracts the title of the chorale from the loaded XML document.
+ * 
+ * The title is retrieved from the "credit-words" element within the "credit" element
+ * of the XML document's root element. If the "credit-words" element is not found,
+ * an empty string is returned.
+ *
+ * @return The title of the chorale, or an empty string if the title could not be found.
+ */
 std::string Chorale::get_title_from_xml() {
     XMLElement* _creditElement = try_get_child( doc_.RootElement(), "credit", /* verbose =*/ false );
     if (_creditElement) {
@@ -26,6 +35,17 @@ std::string Chorale::get_title_from_xml() {
     return "";
 }
 
+/**
+ * Loads the XML data from the specified source, either a file or a URL.
+ * 
+ * This function first determines the type of the XML source (file or URL) using the `Arguments::get_input_source_type` 
+ *  function.
+ * It then calls the appropriate function (`load_xml_from_file` or `load_xml_from_url`) to load the XML data.
+ * If the XML data is successfully loaded, the title of the chorale is extracted using the `get_title_from_xml` 
+ *  function and stored in the `title_` member variable.
+ *
+ * @return `true` if the XML data was successfully loaded, `false` otherwise.
+ */
 bool Chorale::load_xml() {
     isXmlLoaded_ = false;
     switch (Arguments::get_input_source_type( xmlSource_ )) {
@@ -46,10 +66,29 @@ bool Chorale::load_xml() {
     return isXmlLoaded_;
 }
 
+/**
+ * Loads the XML data from the specified file.
+ *
+ * This function uses the `XmlUtils::load_from_file` function to load the XML data
+ * from the specified file path into the `doc_` member variable.
+ *
+ * @param xmlSource The file path of the XML source to load.
+ * @return `true` if the XML data was successfully loaded, `false` otherwise.
+ */
 bool Chorale::load_xml_from_file( const std::string& xmlSource ) { 
     return XmlUtils::load_from_file( doc_, xmlSource.c_str() );
 }
 
+/**
+ * Loads the XML data from the specified URL.
+ *
+ * This function uses the cURL library to download the XML data from the specified URL and stores it in a buffer.
+ * It then passes the buffer to the `XmlUtils::load_from_buffer` function to parse the XML data and store it in the 
+ *  `doc_` member variable.
+ *
+ * @param xmlSource The URL of the XML source to load.
+ * @return `true` if the XML data was successfully loaded, `false` otherwise.
+ */
 bool Chorale::load_xml_from_url( const std::string& xmlSource ) {
     CURL* curl = curl_easy_init();
     std::string buffer;
@@ -69,6 +108,18 @@ bool Chorale::load_xml_from_url( const std::string& xmlSource ) {
     return XmlUtils::load_from_buffer( doc_, buffer.c_str() );
 }
 
+/**
+ * Callback function used by the cURL library to handle the response data.
+ *
+ * This function is called by the cURL library whenever data is received from the
+ * remote server. It appends the received data to the provided buffer.
+ *
+ * @param contents Pointer to the received data.
+ * @param size Size of each data element.
+ * @param nmemb Number of data elements received.
+ * @param userp Pointer to the user-provided data (in this case, a std::string* buffer).
+ * @return The total number of bytes appended to the buffer.
+ */
 size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     size_t realsize = size * nmemb;
     std::string* buffer = static_cast<std::string*>(userp);
@@ -76,6 +127,15 @@ size_t Chorale::curl_callback(void* contents, size_t size, size_t nmemb, void* u
     return realsize;
 }
 
+/**
+ * Loads the part IDs and names from the XML data.
+ *
+ * This function parses the XML data loaded in the `doc_` member variable to extract the part IDs and names.
+ * It iterates through the `<score-part>` elements under the `<part-list>` element, and stores the part name
+ * associated with each part ID in the `partIds_` map.
+ *
+ * @return `true` if the part IDs and names were successfully loaded, `false` otherwise.
+ */
 bool Chorale::load_part_ids() {
     // xml sample:
     //    <part-list>
@@ -121,6 +181,17 @@ bool Chorale::load_part_ids() {
     return true;
 }
 
+/**
+ * Loads the XML elements for each part of the chorale.
+ *
+ * This function iterates through the `<part>` elements in the XML document and
+ * associates each part with its corresponding part name from the `partIds_`
+ * map. The `partXmls_` map is then populated with the `<part>` XML elements
+ * keyed by their part names.
+ *
+ * @return `true` if the part XML elements were successfully loaded, `false`
+ * otherwise.
+ */
 bool Chorale::load_part_xmls() {
     // xml sample
     //  <part id="P1">
@@ -161,6 +232,19 @@ bool Chorale::load_part_xmls() {
     return true;
 }
 
+/**
+ * Retrieves the XML element for the specified part name.
+ *
+ * If the part name is not found in the `partXmls_` map, this function will
+ * attempt to find the part name using the `partIdList_` and `partNameIndices_`
+ * maps. This is done to handle cases where the part names do not match the
+ * expected standard.
+ *
+ * @param partName The name of the part to retrieve.
+ * @return The XML element for the specified part, or `nullptr` if the part
+ * could not be found.
+ */
+
 tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const { 
     auto it = partXmls_.find( partName );
 
@@ -180,6 +264,17 @@ tinyxml2::XMLElement* Chorale::get_part_xml( const std::string& partName ) const
     return (it != partXmls_.end()) ? it->second : nullptr;
 }
 
+/**
+ * Builds the BWV (Bach-Werke-Verzeichnis) identifier for a given XML source.
+ *
+ * The BWV identifier is a standard way of referring to Bach's compositions.
+ * This function extracts the BWV number from the XML source file path, formats
+ * it according to the standard, and handles cases where the same BWV number
+ * has been used for multiple compositions.
+ *
+ * @param xmlSource The file path or URL of the XML source.
+ * @return The formatted BWV identifier as a string.
+ */
 std::string Chorale::build_BWV( const std::string& xmlSource ) const {
     auto _it = std::find(xmlSource.rbegin(), xmlSource.rend(), '/');
     unsigned int _bwv = std::stoi(xmlSource.substr(std::distance(_it, xmlSource.rend())));
@@ -202,6 +297,14 @@ std::string Chorale::build_BWV( const std::string& xmlSource ) const {
     return _bwvStream.str();
 }
 
+/**
+ * Loads the specified parts into the Chorale object.
+ *
+ * This function takes a vector of part names and creates a new Part object for each
+ * part, storing them in the parts_ dictionary keyed by the part name.
+ *
+ * @param partsToParse A vector of part names to load into the Chorale.
+ */
 void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
     parts_.clear();
 
@@ -212,12 +315,31 @@ void Chorale::load_parts( const std::vector<std::string>& partsToParse ) {
     }
 }
 
+/**
+ * Loads the specified parts into the Chorale object.
+ *
+ * This function takes a vector of Part objects and stores them in the parts_
+ * dictionary, keyed by the part name.
+ *
+ * @param parts A vector of unique_ptr to Part objects to load into the Chorale.
+ */
 void Chorale::load_parts( std::vector<std::unique_ptr<Part>>& parts ) {
     for (auto& _part : parts) {
         parts_[_part->get_part_name()] = std::move( _part );
     }
 }
 
+/**
+ * 
+ * Encodes the parts of the Chorale by parsing the part XML, transposing the parts to C major or A minor, and 
+ *  normalizing the meter.
+ *
+ * This function first maps the part IDs to part names and loads the part XMLs. It then iterates through the parts, 
+ *  parsing the XML for each part, transposing the part to C major or A minor, and normalizing the meter so that 
+ *  each part contains the same number of sub-beats.
+ *
+ * @return true if the encoding was successful, false otherwise.
+ */
 bool Chorale::encode_parts()
 {
     // map part ids to part names
@@ -256,12 +378,29 @@ bool Chorale::encode_parts()
     return true;
 }
 
+/**
+ * Retrieves a reference to the Part object associated with the given part name.
+ *
+ * @param partName The name of the part to retrieve.
+ * @return A reference to the Part object, or a reference to a null Part object if the part name is not found.
+ */
 std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
     auto _it = parts_.find(partName);
     return (_it != parts_.end()) ? _it->second : nullPart_;
 }
 
+/**
+ * Combines the individual parts (Soprano, Alto, Tenor, Bass) into a single CombinedPart object.
+ *
+ * @param verbose If true, the function will print additional information during the build process.
+ * @param noEOM If true, the function will not add an "End of Music" marker to the combined part.
+ * @return True if the combined part was successfully built, false otherwise.
+ */
 bool Chorale::combine_parts( bool verbose, bool noEOM ) {
+    if (!get_part("Soprano") || !get_part("Alto") || !get_part("Tenor") || !get_part("Bass")) {
+        std::cerr << "All four parts must be loaded before combining them." << std::endl;
+        return false;
+    }
     combinedPart_ = std::make_unique<CombinedPart>( get_part( "Soprano" ),
         get_part( "Alto" ),
         get_part( "Tenor" ),

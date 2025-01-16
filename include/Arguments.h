@@ -6,7 +6,7 @@ class Arguments {
         enum XmlSourceType {
             FILE,   // a music xml file on the local filesystem
             URL,    // a music xml file obtainable via a url
-            TXT,     // a text file containing a list of music xml file names or urls
+            TXT,    // a text file containing a list of music xml file names or urls
             UNKNOWN
         };
 
@@ -67,9 +67,16 @@ class Arguments {
                 return Arguments::UNKNOWN;
             }
         }
+
+        /// Returns a vector of the part names to parse from the input source
         std::vector<std::string> get_parts_to_parse() const;
+
+        /// True if an output file has been specified - else write to console
         bool has_output_file() const { return outputFileParm_.Matched(); }
         std::string get_output_file() const { return outputFile_; };
+
         bool verbose() const { return verbose_.Get(); }
+
+        /// True if the end-of-measure markers should be suppressed
         bool noEOM() const { return noEOM_.Get(); }
 };

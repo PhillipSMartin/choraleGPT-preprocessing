@@ -35,6 +35,11 @@ bool Encoding::is_EOP() const {
     return false;
 }
 
+/**
+ * Compares two Encoding objects for equality.
+ * If both objects are of type Marker, the comparison is delegated to the Marker::operator== method.
+ * Otherwise, the comparison is based on the tokenType_ member.
+ */
 bool Encoding::operator==( const Encoding& other ) const {
     if ((tokenType_ == MARKER) && (other.tokenType_ == MARKER)) {
         return dynamic_cast<const Marker&>( *this ).operator==( 
@@ -60,6 +65,11 @@ std::string Marker::to_string() const {
     }
 }
 
+/**
+ * Parses the encoding string and updates the note's pitch, octave, and duration.
+ * The encoding string is expected to be in the format "pitch.octave.duration".
+ * This method is an implementation detail of the Note class.
+ */
 void Note::parse_encoding( const std::string& encoding ) {
     std::istringstream _is{encoding}; 
 
@@ -75,6 +85,13 @@ void Note::parse_encoding( const std::string& encoding ) {
     duration_ = std::stoi( _inputDuration );
 }
 
+/**
+ * Parses the pitch string and updates the note's pitch and accidental properties.
+ * The pitch string can optionally start with a '+' character to indicate the note is tied.
+ * The pitch character is stored in the `pitch_` member, and the accidental value (if present) is stored in 
+ *  the `accidental_` member.
+ * This method is an implementation detail of the Note class.
+ */
 void Note::parse_pitch( const std::string& pitch ) {
     std::string _savePitch{ pitch }; 
     if (_savePitch[0] == '+') {
@@ -87,6 +104,12 @@ void Note::parse_pitch( const std::string& pitch ) {
     }
 }
 
+/**
+ * Converts the note's pitch, accidental, and octave properties into a string representation.
+ * The string will start with a '+' character if the note is tied, followed by the pitch character,
+ * an optional accidental value, and the octave number separated by a period.
+ * This method is an implementation detail of the Note class.
+ */
 std::string Note::pitch_to_string() const {
     std::ostringstream _os;
     if ( tied_ ) {
@@ -101,6 +124,26 @@ std::string Note::pitch_to_string() const {
     return _os.str();
 }  
 
+/**
+ * Parses an XML note element and updates the note's properties accordingly.
+ * This method is an implementation detail of the Note class.
+ *
+ * The method first checks if the note element has a "pitch" child element. If so, it extracts the
+ * pitch, accidental, and octave information from the child elements and updates the corresponding
+ * member variables of the Note object.
+ *
+ * The method also handles the case of a tied note by checking the "tie" child element and updating
+ * the `tied_` and `tie_started_` member variables accordingly.
+ *
+ * If the note element has a "rest" child element, the method sets the `isValid_` member variable to
+ * true, indicating that the note is a valid rest.
+ *
+ * Finally, the method calls the `Encoding::parse_xml()` function to extract the duration of the note,
+ * which may in turn set the `isValid_` member variable to false if the duration is invalid.
+ *
+ * @param note The XML element representing the note to be parsed.
+ * @return True if the note is valid, false otherwise.
+ */
 bool Note::parse_xml( XMLElement* note )  {
     isValid_ = false;
     XMLElement* _pitch = note ? note->FirstChildElement( "pitch" ) : nullptr;
@@ -147,6 +190,12 @@ bool Note::parse_xml( XMLElement* note )  {
     return isValid_;
 }
 
+/**
+ * Parses the XML element and extracts the duration value.
+ *
+ * @param element The XML element to be parsed.
+ * @return True if the duration was successfully parsed, false otherwise.
+ */
 bool Encoding::parse_xml( XMLElement* element ) {
     XMLElement* _duration = XmlUtils::try_get_child( element, "duration" );
     if (_duration) {
@@ -159,6 +208,13 @@ bool Encoding::parse_xml( XMLElement* element ) {
     return isValid_;
 }   
 
+/**
+ * Converts the Chord object to a string representation.
+ * The string representation includes the pitch of each note in the chord,
+ * separated by a period, followed by the duration of the chord.
+ * 
+ * @return A string representation of the Chord object.
+ */
 std::string Chord::to_string() const {
     std::ostringstream _os;
     for (auto& note : notes_) {
@@ -168,6 +224,12 @@ std::string Chord::to_string() const {
     return _os.str();
 }
 
+/**
+ * Transposes the pitch, octave, and accidental of the Note based on the provided transposition rules.
+ *
+ * @param rules A map of transposition rules, where the key is the current pitch and the value is a 
+ *  TranspositionRule struct containing the new pitch, octave change, and accidental change.
+ */
 void Note::transpose( const std::map<char, TranspositionRule>& rules ) {
     auto rule = rules.find( pitch_ );
     if (rule != rules.end()) {

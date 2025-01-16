@@ -4,7 +4,16 @@
 using namespace tinyxml2;
 
 namespace XmlUtils {
-    XMLElement* try_get_child( XMLElement* parent, const char* name, bool verbose /* = true */ ) {
+/**
+     * Tries to get the first child element of the given parent element with the specified name.
+     * If the child element is not found and `verbose` is true, logs a message to `std::cerr`.
+     *
+     * @param parent The parent element to search for the child.
+     * @param name The name of the child element to find.
+     * @param verbose Whether to log a message if the child element is not found.
+     * @return The first child element with the specified name, or `nullptr` if not found.
+     */
+        XMLElement* try_get_child( XMLElement* parent, const char* name, bool verbose /* = true */ ) {
         XMLElement* child = parent ? parent->FirstChildElement( name ) : nullptr;
         if (verbose && parent && !child) {
             std::cerr << "No " << name << " element found"; 
@@ -14,6 +23,12 @@ namespace XmlUtils {
         return child;
     }
 
+    /**
+     * Recursively prints the XML element and its children to the console, with indentation.
+     *
+     * @param element The XML element to print.
+     * @param depth The current depth of the element in the XML tree (default is 0).
+     */
     void printElement(XMLElement* element, int depth /* = 0 */) {
         while (element) {
             // Print indentation
@@ -40,6 +55,13 @@ namespace XmlUtils {
         }
     }
 
+    /**
+     * Loads an XML document from a file.
+     *
+     * @param doc The XMLDocument object to load the file into.
+     * @param fileName The path to the XML file to load.
+     * @return `true` if the file was loaded successfully, `false` otherwise.
+     */
     bool load_from_file( XMLDocument& doc, const char* fileName ) {
         XMLError rc = doc.LoadFile( fileName );
         if (rc != XML_SUCCESS) { 
@@ -49,6 +71,13 @@ namespace XmlUtils {
         return true;
     }
 
+    /**
+     * Loads an XML document from a memory buffer.
+     *
+     * @param doc The XMLDocument object to load the XML data into.
+     * @param buffer The memory buffer containing the XML data.
+     * @return `true` if the XML data was loaded successfully, `false` otherwise.
+     */
     bool load_from_buffer( XMLDocument& doc, const char* buffer ) {
         if (!buffer || buffer[0] == '\0') {
             std::cerr << "Empty or null buffer provided" << std::endl;

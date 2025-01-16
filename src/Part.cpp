@@ -5,6 +5,16 @@
 
 using namespace tinyxml2;
 
+/**
+ * Parses the XML representation of a musical part and constructs the corresponding internal data structures.
+ *
+ * This function is responsible for parsing the XML element representing a musical part, extracting the key, 
+ *  time signature, and other attributes, and then parsing each measure within the part to construct the 
+ *  corresponding encoding data.
+ *
+ * @param part The XML element representing the musical part to be parsed.
+ * @return true if the parsing was successful, false otherwise.
+ */
 bool Part::parse_xml( tinyxml2::XMLElement* part ) {
     if (!part) {
         std::cerr << "part element is null" << std::endl;
@@ -40,6 +50,16 @@ bool Part::parse_xml( tinyxml2::XMLElement* part ) {
     return true;
 }
 
+/**
+ * Parses the XML attributes element and extracts the key, time signature, and other musical properties.
+ *
+ * This function is responsible for parsing the XML element representing the attributes of a musical part,
+ *  including the key (fifths and mode), time signature (beats per measure and beat type), and divisions
+ *  per quarter note. It populates the corresponding member variables of the Part class.
+ *
+ * @param attributes The XML element containing the attributes for the musical part.
+ * @return true if the parsing was successful, false otherwise.
+ */
 bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
     // sample xml:
     //
@@ -83,6 +103,18 @@ bool Part::parse_attributes( tinyxml2::XMLElement* attributes ) {
     return true;
 }
 
+/**
+ * This function is responsible for parsing the XML element representing a measure of a musical part.
+ * It iterates through the notes in the measure, ignoring any notes that are part of a chord, and
+ * creates a Note object for each valid note. The Note objects are then added to the encodings_
+ * vector of the Part object.
+ *
+ * If any errors occur during the parsing process, such as an invalid note or too many notes in the
+ * measure, the function will log an error message and return false.
+ *
+ * @param measure The XML element representing the measure to be parsed.
+ * @return true if the parsing was successful, false otherwise.
+ */
 bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     XMLElement* _note = try_get_child( measure, "note" );
     while (_note) {
@@ -111,6 +143,17 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
     return true;
 }
 
+/**
+ * Transposes the notes in the Part object to the specified key.
+ *
+ * This function iterates through all the encodings (notes) in the Part object and transposes
+ * them up or down as necessary to reach the target key. It does this by calling the
+ * transpose_up() or transpose_down() functions on each note, and then adjusting the key_
+ * member variable one step closer to the target key.
+ *
+ * @param key The target key to transpose the Part to.
+ * @return true if the transposition was successful, false otherwise.
+ */
 bool Part::transpose( int key ) {
     while (key != key_) {
         for ( auto& _token : encodings_ ) {
@@ -133,6 +176,16 @@ bool Part::transpose( int key ) {
     return true;
 }
 
+ /**
+  * Sets the number of sub-beats per beat for the Part object.
+  *
+  * This function updates the `subBeatsPerBeat_` member variable and adjusts the duration and
+  * tick number of all the encodings (notes) in the Part object to match the new sub-beat
+  * count. This ensures that the timing and duration of the notes remain consistent when the
+  * sub-beat count is changed.
+  *
+  * @param subBeats The new number of sub-beats per beat.
+  */
  void Part::set_sub_beats( size_t subBeats ) {
     size_t _oldSubBeats{ subBeatsPerBeat_ };
     subBeatsPerBeat_ = subBeats;
@@ -142,6 +195,20 @@ bool Part::transpose( int key ) {
     }
  }
 
+/**
+ * Generates the header string for the Part object.
+ * 
+ * The header string includes the following information:
+ * - ID: The unique identifier for the Part
+ * - PART: The name of the Part
+ * - KEY: The key of the Part
+ * - BEATS: The number of beats per measure
+ * - SUB_BEATS: The number of sub-beats per beat
+ * 
+ * This information is formatted and returned as a string.
+ * 
+ * @return The header string for the Part object.
+ */
 std::string Part::get_header() const {
     std::ostringstream _os;
     _os << SOH << ID << id_ 
@@ -153,6 +220,15 @@ std::string Part::get_header() const {
     return _os.str();
 }
 
+/**
+ * Generates a string representation of the Part object, including its header information
+ * and the string representations of all the encodings (notes) in the Part.
+ *
+ * The header information includes the Part's ID, name, key, beats per measure, and sub-beats
+ * per beat. The encodings are separated by a space character.
+ *
+ * @return A string representation of the Part object.
+ */
 std::string Part::to_string() const {
     std::ostringstream _os;
     _os << get_header();
@@ -164,6 +240,14 @@ std::string Part::to_string() const {
     return _os.str();
 }
 
+/**
+ * Generates a string representation of the location of the given Encoding within the Part.
+ * The location string includes the Part's ID, the measure number, and the beat number.
+ * If the beat is subdivided, the sub-beat number is also included.
+ *
+ * @param encoding The Encoding object for which to generate the location string.
+ * @return A string representation of the Encoding's location within the Part.
+ */
 std::string Part::location_to_string( const Encoding* encoding ) const {
     if (encoding)
     {
@@ -196,6 +280,15 @@ std::ostream& operator <<( std::ostream& os, const Part& part) {
     return os;
 }
 
+/**
+ * Attempts to retrieve a child XML element with the given name from the specified parent element.
+ * If the child element is not found and the `verbose` flag is set, logs an error message.
+ *
+ * @param parent The parent XML element to search for the child.
+ * @param childName The name of the child XML element to retrieve.
+ * @param verbose Whether to log an error message if the child element is not found.
+ * @return The child XML element if found, otherwise `nullptr`.
+ */
 XMLElement* Part::try_get_child( XMLElement* parent, const char* childName, bool verbose /* = true */ ) {
     XMLElement* _xmlElement = XmlUtils::try_get_child( parent, childName, verbose );
     if (verbose && !_xmlElement) { 
@@ -205,6 +298,18 @@ XMLElement* Part::try_get_child( XMLElement* parent, const char* childName, bool
 }
 
 
+/**
+ * Parses a string representation of a part and extracts the header and encodings.
+ *
+ * This function first searches the input string for the end-of-header (EOH) marker. If the EOH marker is not found,
+ * it logs an error message and returns `false`.
+ *
+ * If the EOH marker is found, the function calls `import_header()` to parse the header portion of the string, and
+ * then calls `import_encodings()` to parse the encoding portion of the string.
+ *
+ * @param part The string representation of the part to parse.
+ * @return `true` if the parsing was successful, `false` otherwise.
+ */
 bool Part::parse_encoding( const std::string& part ) {
     auto _it = part.find(EOH);
     if (_it == std::string::npos) {
@@ -218,6 +323,21 @@ bool Part::parse_encoding( const std::string& part ) {
     return import_encodings( part.substr( _it + 1 ) );
 }
 
+/**
+ * Parses a key string in the format "key-mode" and updates the `key_` and `mode_` member variables accordingly.
+ *
+ * The key string is expected to be in the format "key-mode", where "key" is a string representing the key 
+ *  (e.g. "C", "G", "D") and "mode" is a string representing the mode (either "MAJOR" or "MINOR").
+ *
+ * This function first splits the input string on the "-" character to extract the key and mode. 
+ *  It then looks up the key in the `circle_of_fifths_` array and sets the `key_` member variable based on the 
+ *  index of the key in the array. If the mode is "MAJOR", the `mode_` member variable is set to `Mode::MAJOR`. 
+ *  If the mode is "MINOR", the `mode_` member variable is set to `Mode::MINOR` and the `key_` member variable is 
+ *  decremented by 3.
+ *
+ * @param keyString The key string in the format "key-mode".
+ * @return `true` if the key string was successfully parsed, `false` otherwise.
+ */
 bool Part::import_key( const std::string& keyString )  {
     std::string _inputKey; 
     std::string _inputMode;
@@ -244,6 +364,21 @@ bool Part::import_key( const std::string& keyString )  {
     return true;
 }
 
+/**
+ * Extracts the value of a specified key from a header string.
+ *
+ * This function searches the provided `header` string for the given `key`, and returns the value associated with 
+ *  that key.
+ * The key-value pairs in the header are expected to be delimited by the `DELIM` character, and the end of the 
+ *  header is marked by the `EOH` string.
+ *
+ * If the key is not found in the header, the function prints an error message to `std::cerr` and returns an 
+ *  empty string.
+ *
+ * @param header The header string to search.
+ * @param key The key to search for in the header.
+ * @return The value associated with the given key, or an empty string if the key is not found.
+ */
 std::string Part::find_header_value( const std::string& header, const std::string& key ) const {
     auto _it = header.find( key );
     if (_it == std::string::npos) {
@@ -260,6 +395,16 @@ std::string Part::find_header_value( const std::string& header, const std::strin
     return header.substr( _cursor, _delim - _cursor );
 }
 
+/**
+ * Imports header information from the provided string and updates the Part object's properties accordingly.
+ *
+ * This function extracts various values from the header string, such as the part ID, part name, beats per measure,
+ * and sub-beats per beat. It then calls the `import_key()` function to update the key and mode properties based on
+ * the key value found in the header.
+ *
+ * @param header The header string containing the part information.
+ * @return `true` if the header information was successfully imported, `false` otherwise.
+ */
 bool Part::import_header( const std::string& header ) {
     id_ = find_header_value( header, ID );
     partName_ = find_header_value( header, PART );
@@ -268,6 +413,16 @@ bool Part::import_header( const std::string& header ) {
     return import_key( find_header_value( header, KEY ) ); // updates key_ and mode_
 }
 
+/**
+ * Imports a series of encodings from the provided string and adds them to the Part object.
+ *
+ * This function takes a string containing one or more encoding values, separated by whitespace. It creates a
+ * new `Encoding` object for each value using the `make_encoding()` function, and then adds each encoding to the
+ * `encodings_` vector using the `push_encoding()` function.
+ *
+ * @param line The string containing the encoding values to import.
+ * @return `true` if the encodings were successfully imported, `false` otherwise.
+ */
 bool Part::import_encodings( const std::string& line ) {
     std::istringstream _is{ line };
     std::string _token;
@@ -278,6 +433,16 @@ bool Part::import_encodings( const std::string& line ) {
     return true;
 }
 
+/**
+ * Creates a new `Encoding` object based on the provided encoding string.
+ *
+ * This function examines the encoding string and determines whether it represents a marker (such as start of
+ * content, end of content, etc.) or a note. It then creates and returns the appropriate `Encoding` subclass
+ * instance.
+ *
+ * @param encoding The string representation of the encoding to create.
+ * @return A unique_ptr to the newly created `Encoding` object.
+ */
 std::unique_ptr<Encoding> Part::make_encoding( const std::string& encoding ) const {
     if (encoding == Marker::SOC_STR) {   
         return std::make_unique<Marker>( Marker::MarkerType::SOC );
@@ -296,6 +461,14 @@ std::unique_ptr<Encoding> Part::make_encoding( const std::string& encoding ) con
     return std::make_unique<Note>( encoding );
 }
 
+/**
+ * Removes and returns the first encoding from the Part's list of encodings.
+ *
+ * If the list of encodings is empty, this function will return a null pointer.
+ * Otherwise, it will remove and return the first encoding in the list.
+ *
+ * @return A unique_ptr to the first encoding in the list, or nullptr if the list is empty.
+ */
 std::unique_ptr<Encoding> Part::pop_encoding() {
     if (encodings_.empty()) {
         return nullptr;
@@ -307,6 +480,20 @@ std::unique_ptr<Encoding> Part::pop_encoding() {
     }
 }
 
+/**
+ * Adds an encoding to the part's list of encodings, updating the current measure and tick position as necessary.
+ *
+ * If the encoding is an "End of Measure" (EOM) marker, the function will increment the current measure number and
+ * reset the next tick position to 1. It will also handle any upbeat logic if the current measure is the first full
+ * measure.
+ *
+ * The function will then set the location of the encoding based on the current measure and tick position, and
+ * update the next tick position by adding the duration of the encoding.
+ *
+ * Finally, the encoding is added to the list of encodings for the part.
+ *
+ * @param encoding A unique_ptr to the encoding to be added to the part.
+ */
 void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
 
     // if the encoding is EOM, bump measure number and reset tick
@@ -329,17 +516,24 @@ void Part::push_encoding( std::unique_ptr<Encoding>& encoding ) {
     encodings_.push_back( std::move( encoding ) );
 }
 
+/**
+ * Calculates the number of ticks remaining in the current measure.
+ *
+ * @return The number of ticks remaining in the current measure.
+ */
 int Part::ticks_remaining() const {
     int _ticksLeft = beatsPerMeasure_ * subBeatsPerBeat_;
     return _ticksLeft - nextTick_ + 1;
 }
 
+/**
+ * Handles the upbeat logic for the part. This function iterates through all the encodings in the part and updates their
+ * location to be at the beginning of the first full measure, with their tick number adjusted to account for the ticks
+ * remaining in the upbeat measure.
+ */
 void Part::handle_upbeat() {
     for (auto& _encoding : encodings_) {
         _encoding->set_location( 0, _encoding->get_tick_number() + ticks_remaining() );
-        // std::cout << "Readjusted encoding: " 
-        //     <<  location_to_string( _encoding.get() )
-        //     << ": " << _encoding->to_string() << std::endl;
     }
 }   
 
