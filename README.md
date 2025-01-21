@@ -48,6 +48,8 @@ or urls.
       --noHeader                        Don't print the header
       --noEOM                           Don't print <EOM>
       -e, --endTokens                   Print <SOC> and <EOC> as '.'
+      -c, --oneTokenPerBeat             Consolidate all tokens within a beat (incompatible with -C)
+      -C, --startingTokensOnly          Only print tokens at the start of a beat with no durations
       -f[output], --file=[output]       Output file path
 
 ## Output format

@@ -50,7 +50,7 @@ bool Encoding::operator==( const Encoding& other ) const {
     }
 }
 
-std::string Marker::to_string() const {
+std::string Marker::to_string( bool ignoreDuration ) const {
     switch (markerType_) {
         case MarkerType::SOC:
             return SOC_STR;
@@ -215,12 +215,13 @@ bool Encoding::parse_xml( XMLElement* element ) {
  * 
  * @return A string representation of the Chord object.
  */
-std::string Chord::to_string() const {
+std::string Chord::to_string( bool ignoreDuration ) const {
     std::ostringstream _os;
     for (auto& note : notes_) {
         _os << note.pitch_to_string() << '.';
     }
-    _os << duration_;
+
+    _os << Encoding::to_string( ignoreDuration );
     return _os.str();
 }
 

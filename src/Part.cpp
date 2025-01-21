@@ -229,37 +229,69 @@ std::string Part::get_header() const {
  *
  * @return A string representation of the Part object.
  */
+std::string Part::to_string() const {
+    PartPrintOptions _opts;
+    return to_string( _opts );
+}
 
-std::string Part::to_string( bool noHeader /*= false */,
-        bool noEOM /*= false */,
-        bool endTokens /*= false */ ) const {
+std::string Part::to_string( const PartPrintOptions& opts ) const {
 
     std::ostringstream _os;
+    print_header( _os, opts );
 
-    // don't print header if requested
-    if (!noHeader) {
-        _os << get_header() << " ";
-    }
-    
-    auto _it = encodings_.cbegin();
+    // keep track of position within the beat
+    unsigned int _currentSubBeat = 0;
+    unsigned int _nextSubBeat = 0;
+
     for (const auto& _encoding : encodings_) {
-        // don't print EOM if requested
-        if (noEOM && _encoding->is_EOM()) {
-            // bump iterator and continue to avoid an unnecessary space
-            ++_it;
-            continue; 
-        }
-        // print end tokens as '.' if requested
-        else if (endTokens && (_encoding->is_SOC() || _encoding->is_EOC())) {
-            _os << ".";
+        if (_encoding->is_marker()) {
+            print_marker( _os, opts, *_encoding );
         }
         else {
-            _os << _encoding->to_string();
+            _currentSubBeat = _nextSubBeat;
+            _nextSubBeat = (_currentSubBeat + _encoding->get_duration()) % subBeatsPerBeat_;
+            print_note( _os, opts, *_encoding, _currentSubBeat == 0, _nextSubBeat == 0 );
         }
-        _os << (++_it != encodings_.cend() ? " " : "");
     }
+
     return _os.str();
 }
+
+
+void Part::print_header( std::ostream& os, const PartPrintOptions& opts ) const {
+    // don't print header unless requested
+    if (opts.printHeader) {
+        os << get_header() << " ";
+    }
+}
+
+void Part::print_marker( std::ostream& os, const PartPrintOptions& opts, const Encoding& marker ) const {
+    if (marker.is_EOM() && !opts.printEOM) {
+        return;
+    }
+
+    if ((marker.is_SOC() || marker.is_EOC()) && opts.printEndTokensAsPeriod) {
+        os << ".";
+    }
+    else {
+        os << marker.to_string();
+    }
+    os << ( marker.is_EOC() ? "" : " " );
+}
+
+void Part::print_note( std::ostream& os, const PartPrintOptions& opts, const Encoding& note,
+    bool startsBeat, bool endsBeat ) const {
+
+    // if we are consolidating tokens withn the beat and have more coming, delimiter is a period
+    char _delimiter = (opts.consolidateBeat && !endsBeat) ? '.' : ' ';
+
+    // always print start of beat
+    // ignore subsequent notes if requested
+    if (startsBeat || !opts.printOnlyStartingTokenforEachBeat) {
+        os << note.to_string( opts.printOnlyStartingTokenforEachBeat ) << _delimiter;
+    }   
+}
+
 
 
 

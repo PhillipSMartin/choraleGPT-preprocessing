@@ -65,7 +65,9 @@ class Encoding {
         virtual std::unique_ptr<Encoding> clone() const {
             return std::make_unique<Encoding>(*this);
         }         
-        virtual std::string to_string() const { return std::to_string( duration_ ); }
+        virtual std::string to_string( bool ignoreDuration = false ) const {
+            return ignoreDuration ? "" : std::to_string( duration_ );
+        }
 
         // two markers are equal only if they have the same marker type
         // other encodings are equal if they have the same token type
@@ -102,7 +104,7 @@ class Marker : public Encoding {
         std::unique_ptr<Encoding> clone() const override {
             return std::make_unique<Marker>(*this);
         }
-        std::string to_string() const override;
+        std::string to_string( bool ignoreDuration = false ) const override;
 
         bool operator==(const Marker& other) const {
             return markerType_ == other.markerType_;
@@ -160,9 +162,9 @@ class Note : public Encoding {
 
         std::unique_ptr<Encoding> clone() const override {
             return std::make_unique<Note>(*this);
-        }           
-        std::string to_string() const override {
-            return pitch_to_string() + '.' + Encoding::to_string(); 
+        }         
+        std::string to_string( bool ignoreDuration = false ) const {
+            return pitch_to_string() + "." + Encoding::to_string( ignoreDuration ); 
         }  
         std::string pitch_to_string() const;
 
@@ -190,5 +192,5 @@ class Chord : public Encoding {
         std::unique_ptr<Encoding> clone() const override {
             return std::make_unique<Chord>(*this);
         }
-        std::string to_string() const;
+        std::string to_string(  bool ignoreDuration = false  ) const;
 };

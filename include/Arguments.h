@@ -30,6 +30,8 @@ class Arguments {
         args::Flag verbose_{parser_, "Verbose", "Verbose output", {'v', "verbose"}};
         args::Flag noEOM_{parser_, "No EOM", "Don't print <EOM>", {"noEOM"}};
         args::Flag endTokens_{parser_, "Special end tokens", "Print <SOC> or <EOC> as '.'", {'e', "endTokens"}};
+        args::Flag oneTokenPerBeat_{parser_, "One token per beat", "Print one token per beat", {'c', "oneTokenPerBeat"}};
+        args::Flag startingTokensOnly_{parser_, "Starting tokens only", "Print only the starting token of each beat", {'C', "startingTokensOnly"}};
         args::Flag noHeader_{parser_, "No Header", "Don't generate header", {"noHeader"}};
         args::ValueFlag<std::string> outputFileParm_{parser_, "output", "Output file path", {'f', "file"}};
 
@@ -81,6 +83,12 @@ class Arguments {
 
         // Don't print <EOM> markers
         bool noEOM() const { return noEOM_.Get(); }
+
+        // Consolidate all tokens within a beat
+        bool consolidateBeat() const { return oneTokenPerBeat_.Get() && !startingTokensOnly_.Get(); }
+
+        // Print only the starting token of each beat
+        bool startingTokensOnly() const { return startingTokensOnly_.Get(); }
 
         //  Print <SOC> and <EOC> markers as '.'
         bool endTokens() const { return endTokens_.Get(); }

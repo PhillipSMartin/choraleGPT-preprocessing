@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Arguments.h"
 #include "Encoding.h"
 #include "XmlUtils.h"
 
@@ -8,6 +9,22 @@
 #include <string>
 #include <tinyxml2.h>
 #include <vector>
+
+struct PartPrintOptions {
+    bool printHeader = true;
+    bool printEOM = true;
+    bool printEndTokensAsPeriod = false;
+    bool consolidateBeat = false;
+    bool printOnlyStartingTokenforEachBeat = false;
+
+    PartPrintOptions() = default;
+    PartPrintOptions( const Arguments& args ) :
+        printHeader{!args.noHeader()},
+        printEOM{!args.noEOM()},
+        printEndTokensAsPeriod{args.endTokens()},
+        consolidateBeat{args.consolidateBeat()},
+        printOnlyStartingTokenforEachBeat{args.startingTokensOnly()} {}
+};
 
 
 // class containing info about a single voice part
@@ -162,7 +179,8 @@ class Part {
             return (mode_ == Mode::MAJOR) ? MAJOR_STR : MINOR_STR;
         }
         std::string location_to_string( const Encoding* encoding ) const;
-        std::string to_string( bool noHeader = false, bool noEOM = false, bool endTokens = false ) const;
+        std::string to_string() const;
+        std::string to_string( const PartPrintOptions& options ) const;
 
         friend std::ostream& operator <<( std::ostream& os, const Part& part );
 
@@ -196,4 +214,11 @@ class Part {
         void transpose_down( Note& note ) {
             note.transpose( transposeDownRules );
         }
+
+        // helper functions for to_string()
+        void print_header( std::ostream& os, const PartPrintOptions& opts ) const;
+        void print_marker( std::ostream& os, const PartPrintOptions& opts, const Encoding& marker ) const;
+        void print_note( std::ostream& os, const PartPrintOptions& opts, const Encoding& note, 
+            bool startsBeat, bool endsBeat ) const;
+
 };

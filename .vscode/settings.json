@@ -51,5 +51,6 @@
         "optional": "cpp",
         "ranges": "cpp",
         "fstream": "cpp"
-    }
+    },
+    "cody.debug.verbose": true
 }

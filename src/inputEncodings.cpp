@@ -21,6 +21,7 @@ int main( int argc, char** argv )
     if (!_args.parse_command_line( argc, argv )) {
         return 1;
     }
+    PartPrintOptions _printOptions{ _args};
 
     // open output file if we have one
     std::ofstream _outputFile{};
@@ -69,12 +70,18 @@ int main( int argc, char** argv )
 
         if (!_done) {
             _attempts++;
+
+            // create a Chorale object from the parts
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
-            _chorale.load_parts( _parts );   
+            _chorale.load_parts( _parts );  
+
+            // combine the parts into chords
             if (_chorale.combine_parts( _args.verbose() )) {
+
+                // print the combined part to the output file
                 if (_args.has_output_file()) {
                     if (auto& _part = _chorale.get_combined_part()) {
-                        _outputFile << _part->to_string( _args.noHeader(), _args.noEOM(), _args.endTokens() ) << std::endl;
+                        _outputFile << _part->to_string( _printOptions ) << std::endl;
                     }
                     else {
                         std::cerr << "Combined parts not found for " << _chorale.get_BWV() << std::endl;
