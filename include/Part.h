@@ -162,7 +162,7 @@ class Part {
             return (mode_ == Mode::MAJOR) ? MAJOR_STR : MINOR_STR;
         }
         std::string location_to_string( const Encoding* encoding ) const;
-        std::string to_string() const;
+        std::string to_string( bool noHeader = false, bool noEOM = false, bool endTokens = false ) const;
 
         friend std::ostream& operator <<( std::ostream& os, const Part& part );
 

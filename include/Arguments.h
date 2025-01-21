@@ -28,7 +28,9 @@ class Arguments {
         args::Flag tenor_{parser_, "Tenor", "Parse the tenor part", {'t', "tenor"}};
         args::Flag bass_{parser_, "Bass", "Parse the bass part", {'b', "bass"}};
         args::Flag verbose_{parser_, "Verbose", "Verbose output", {'v', "verbose"}};
-        args::Flag noEOM_{parser_, "No EOM", "Don't generate end-of-measure markers", {"noEOM"}};
+        args::Flag noEOM_{parser_, "No EOM", "Don't print <EOM>", {"noEOM"}};
+        args::Flag endTokens_{parser_, "Special end tokens", "Print <SOC> or <EOC> as '.'", {'e', "endTokens"}};
+        args::Flag noHeader_{parser_, "No Header", "Don't generate header", {"noHeader"}};
         args::ValueFlag<std::string> outputFileParm_{parser_, "output", "Output file path", {'f', "file"}};
 
         // Store references to flags in vector
@@ -77,6 +79,12 @@ class Arguments {
 
         bool verbose() const { return verbose_.Get(); }
 
-        /// True if the end-of-measure markers should be suppressed
+        // Don't print <EOM> markers
         bool noEOM() const { return noEOM_.Get(); }
+
+        //  Print <SOC> and <EOC> markers as '.'
+        bool endTokens() const { return endTokens_.Get(); }
+
+        // True if the header should not be printed
+        bool noHeader() const { return noHeader_.Get(); }
 };

@@ -45,7 +45,9 @@ or urls.
       -h, --help                        Display this help menu
       source                            The file name to process
       -v, --verbose                     Verbose output
-      --noEOM                           Don't generate end-of-measure markers
+      --noHeader                        Don't print the header
+      --noEOM                           Don't print <EOM>
+      -e, --endTokens                   Print <SOC> and <EOC> as '.'
       -f[output], --file=[output]       Output file path
 
 ## Output format

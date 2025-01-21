@@ -229,16 +229,39 @@ std::string Part::get_header() const {
  *
  * @return A string representation of the Part object.
  */
-std::string Part::to_string() const {
+
+std::string Part::to_string( bool noHeader /*= false */,
+        bool noEOM /*= false */,
+        bool endTokens /*= false */ ) const {
+
     std::ostringstream _os;
-    _os << get_header();
+
+    // don't print header if requested
+    if (!noHeader) {
+        _os << get_header() << " ";
+    }
     
+    auto _it = encodings_.cbegin();
     for (const auto& _encoding : encodings_) {
-        _os << " ";
-        _os << _encoding->to_string();
+        // don't print EOM if requested
+        if (noEOM && _encoding->is_EOM()) {
+            // bump iterator and continue to avoid an unnecessary space
+            ++_it;
+            continue; 
+        }
+        // print end tokens as '.' if requested
+        else if (endTokens && (_encoding->is_SOC() || _encoding->is_EOC())) {
+            _os << ".";
+        }
+        else {
+            _os << _encoding->to_string();
+        }
+        _os << (++_it != encodings_.cend() ? " " : "");
     }
     return _os.str();
 }
+
+
 
 /**
  * Generates a string representation of the location of the given Encoding within the Part.

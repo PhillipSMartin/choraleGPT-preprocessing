@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/inputEncodings",
-            "args": ["../outputs/806B-separate-parts.txt", "-satb", "-f", "../outputs/806B-combined-parts.txt"],
+            "args": ["../outputs/all-chorales-separate-parts.txt", "-satb", "--noEOM", "--noHeader", "-e", "-f", "../outputs/all-chorales-chords-noeom.txt"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],

@@ -49,7 +49,7 @@ class CombinedPart : public Part {
             mode_ = soprano->get_mode();
         }
 
-        bool build( bool verbose, bool noEOM );
+        bool build( bool verbose );
 
     private:
         std::ostream& show_current_tokens( std::ostream& os ) const;
@@ -65,10 +65,10 @@ class CombinedPart : public Part {
         // returns true if we thereby exhaust the duration of this token and will need a new one next time
         bool reduce_duration( Note& note, const unsigned int reduction );
 
-        // add marker to the combined parts unless it is EOM and noEOM was specified
+        // add marker to the combined parts
         // takes ownership of the token
         // returns true if the marker was EOC
-        bool process_marker( std::unique_ptr<Encoding>& token,  bool verbose, bool noEOM  );
+        bool process_marker( std::unique_ptr<Encoding>& token,  bool verbose );
 
         // build chord from the current tokens
         void add_chord( bool verbose );

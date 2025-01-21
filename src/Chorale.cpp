@@ -393,10 +393,9 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
  * Combines the individual parts (Soprano, Alto, Tenor, Bass) into a single CombinedPart object.
  *
  * @param verbose If true, the function will print additional information during the build process.
- * @param noEOM If true, the function will not add an "End of Music" marker to the combined part.
  * @return True if the combined part was successfully built, false otherwise.
  */
-bool Chorale::combine_parts( bool verbose, bool noEOM ) {
+bool Chorale::combine_parts( bool verbose ) {
     if (!get_part("Soprano") || !get_part("Alto") || !get_part("Tenor") || !get_part("Bass")) {
         std::cerr << "All four parts must be loaded before combining them." << std::endl;
         return false;
@@ -405,5 +404,5 @@ bool Chorale::combine_parts( bool verbose, bool noEOM ) {
         get_part( "Alto" ),
         get_part( "Tenor" ),
         get_part( "Bass" ) );  
-    return combinedPart_->build( verbose, noEOM );
+    return combinedPart_->build( verbose );
 }

@@ -103,30 +103,20 @@ bool CombinedPart::reduce_duration(Note& note, const unsigned int reduction) {
 };
 
 /**
- * Processes a marker token, adding it to the encoding stack if it is not an EOM (End of Music) marker and the 
- *  noEOM flag is not set.
+ * Processes a marker token, adding it to the encoding stack 
  *
  * @param token The marker token to process.
  * @param verbose If true, prints information about the added marker to the console.
- * @param noEOM If true, EOM markers will be skipped and not added to the encoding stack.
  * @return True if the processed marker is an EOC (End of Chord) marker, false otherwise.
  */
-bool CombinedPart::process_marker( std::unique_ptr<Encoding>& token, bool verbose, bool noEOM  ) {
-    if (token->is_EOM() && noEOM) {
-        if (verbose) {
-            std::cout << "Skipping EOM" << std::endl;
-        }
-        return false;
-    }
-    else {
-        push_encoding( token );
-        if (verbose) {
-            std::cout << "Added marker: " 
-                << location_to_string( get_last_encoding().get() ) 
-                << ": " << get_last_encoding()->to_string() << std::endl;  
-        } 
-        return get_last_encoding()->is_EOC();
-    }  
+bool CombinedPart::process_marker( std::unique_ptr<Encoding>& token, bool verbose  ) {
+    push_encoding( token );
+    if (verbose) {
+        std::cout << "Added marker: " 
+            << location_to_string( get_last_encoding().get() ) 
+            << ": " << get_last_encoding()->to_string() << std::endl;  
+    } 
+    return get_last_encoding()->is_EOC();
 }
 
 /**
@@ -165,15 +155,13 @@ void CombinedPart::add_chord( bool verbose ) {
 
 
 /**
- * Builds the combined parts by iteratively processing tokens from the individual parts. It adds markers to the 
- *  combined parts, unless the marker is an EOM (End of Music) and the noEOM flag is set. 
+ * Builds the combined parts by iteratively processing tokens from the individual parts. 
  *  If a Note or Rest is encountered, it builds a chord and adds it to the combined parts.
  *
  * @param verbose If true, prints information about the added markers and chords to the console.
- * @param noEOM If true, skips adding the EOM marker to the combined parts.
  * @return true if an EOC (End of Chord) marker is encountered, false otherwise.
  */
-bool CombinedPart::build( bool verbose, bool noEOM )  {           
+bool CombinedPart::build( bool verbose )  {           
 
     while (true) {
         // get new tokens if necessary
@@ -185,10 +173,10 @@ bool CombinedPart::build( bool verbose, bool noEOM )  {
             return false;
         }
 
-        // if we have a Marker, add it to the combined parts unless it is EOM and noEOM was specified
+        // if we have a Marker, add it to the combined parts
         if (parts_[0]->currentToken->is_marker() ) {
-            if (process_marker( parts_[0]->currentToken, verbose, noEOM )) {
-                // if it's an EOC, we are done
+            if (process_marker( parts_[0]->currentToken, verbose )) {
+                // if return is true, marker is an EOC and we are done
                 return true;
             }  
         }

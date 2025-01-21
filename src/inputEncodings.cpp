@@ -71,10 +71,10 @@ int main( int argc, char** argv )
             _attempts++;
             Chorale _chorale{ "", _parts.back()->get_id()} ; 
             _chorale.load_parts( _parts );   
-            if (_chorale.combine_parts( _args.verbose(), _args.noEOM() )) {
+            if (_chorale.combine_parts( _args.verbose() )) {
                 if (_args.has_output_file()) {
                     if (auto& _part = _chorale.get_combined_part()) {
-                        _outputFile << *_part;
+                        _outputFile << _part->to_string( _args.noHeader(), _args.noEOM(), _args.endTokens() ) << std::endl;
                     }
                     else {
                         std::cerr << "Combined parts not found for " << _chorale.get_BWV() << std::endl;
