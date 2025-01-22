@@ -155,13 +155,15 @@ bool Part::parse_measure( tinyxml2::XMLElement* measure ) {
  * @return true if the transposition was successful, false otherwise.
  */
 bool Part::transpose( int key ) {
+    bool _byFifth = false; // first transposition is by a fourth
+
     while (key != key_) {
         for ( auto& _token : encodings_ ) {
             if (_token->is_note() && (key > key_)) { 
-                transpose_up( static_cast<Note&>( *_token ) ); 
+                transpose_up( static_cast<Note&>( *_token ), _byFifth ); 
             }
             else if (_token->is_note() && (key < key_)) {
-                transpose_down( static_cast<Note&>( *_token ) );
+                transpose_down( static_cast<Note&>( *_token ), _byFifth );
             }
         }
 
@@ -172,6 +174,9 @@ bool Part::transpose( int key ) {
         else if (key_ < key) {
             key_++;
         }
+        
+        // alternate whether by fifth or by fourth to stay close to original key
+        _byFifth = !_byFifth;
     }
     return true;
 }

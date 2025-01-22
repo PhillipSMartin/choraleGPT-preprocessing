@@ -76,7 +76,7 @@ int main( int argc, char** argv )
             _chorale.load_parts( _parts );  
 
             // combine the parts into chords
-            if (_chorale.combine_parts( _args.verbose() )) {
+            if (_chorale.combine_parts( _args.get_parts_to_parse(), _args.verbose() )) {
 
                 // print the combined part to the output file
                 if (_args.has_output_file()) {

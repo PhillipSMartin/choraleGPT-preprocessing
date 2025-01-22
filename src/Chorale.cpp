@@ -395,14 +395,12 @@ std::unique_ptr<Part>& Chorale::get_part(const std::string& partName) {
  * @param verbose If true, the function will print additional information during the build process.
  * @return True if the combined part was successfully built, false otherwise.
  */
-bool Chorale::combine_parts( bool verbose ) {
-    if (!get_part("Soprano") || !get_part("Alto") || !get_part("Tenor") || !get_part("Bass")) {
-        std::cerr << "All four parts must be loaded before combining them." << std::endl;
-        return false;
+bool Chorale::combine_parts( std::vector<std::string> partsToParse, bool verbose ) {
+    std::vector<std::unique_ptr<Part>> _parts;
+    for (auto& _partName : partsToParse) {
+        _parts.push_back( std::move( get_part( _partName ) ) );
     }
-    combinedPart_ = std::make_unique<CombinedPart>( get_part( "Soprano" ),
-        get_part( "Alto" ),
-        get_part( "Tenor" ),
-        get_part( "Bass" ) );  
+
+    combinedPart_ = std::make_unique<CombinedPart>( _parts );  
     return combinedPart_->build( verbose );
 }

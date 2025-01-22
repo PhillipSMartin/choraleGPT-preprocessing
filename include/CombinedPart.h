@@ -4,7 +4,7 @@
 #include <array>
 #include <iostream>
 
-// conatins a copy of a given part to allow us to pop tokens and combine them with other parts
+// contains a copy of a given part to allow us to pop tokens and combine them with other parts
 struct PartWrapper {
     std::unique_ptr<Part> part;
     std::unique_ptr<Encoding> currentToken;
@@ -25,29 +25,11 @@ struct PartWrapper {
 
 class CombinedPart : public Part {
     private:
-        static const int NUM_PARTS = 4;
- 
         // the parts that make up this combined part: Soprano, Alto, Tenor, Bass
-        std::array<std::unique_ptr<PartWrapper>, NUM_PARTS> parts_; 
+        std::vector<std::unique_ptr<PartWrapper>> parts_; 
 
     public:
-        CombinedPart( const std::unique_ptr<Part>& soprano,
-            const std::unique_ptr<Part>& alto,
-            const std::unique_ptr<Part>& tenor,
-            const std::unique_ptr<Part>& bass ) : Part(
-                soprano->get_id(), soprano->get_title(), "Combined" ) {
-
-            // make copies of the parts, so we can pop encodings as we process them
-            parts_[0] = std::make_unique<PartWrapper>( *soprano );
-            parts_[1] = std::make_unique<PartWrapper>( *alto );
-            parts_[2] = std::make_unique<PartWrapper>( *tenor );
-            parts_[3] = std::make_unique<PartWrapper>( *bass );
-
-            beatsPerMeasure_ = soprano->get_beats_per_measure();
-            subBeatsPerBeat_ = soprano->get_sub_beats();
-            key_ = soprano->get_key();
-            mode_ = soprano->get_mode();
-        }
+        CombinedPart( const std::vector<std::unique_ptr<Part>>& parts );
 
         bool build( bool verbose );
 

@@ -1,5 +1,18 @@
  #include "CombinedPart.h"
 
+CombinedPart::CombinedPart( const std::vector<std::unique_ptr<Part>>& parts ) : Part(
+        parts[0]->get_id(), parts[0]->get_title(), "Combined" ) {
+
+    // make copies of the parts, so we can pop encodings as we process them
+    for (const auto& part : parts) {
+        parts_.emplace_back( std::make_unique<PartWrapper>( *part ) );
+    }
+
+    beatsPerMeasure_ = parts[0]->get_beats_per_measure();
+    subBeatsPerBeat_ = parts[0]->get_sub_beats();
+    key_ = parts[0]->get_key();
+    mode_ = parts[0]->get_mode();
+}
 
 /**
  * Prints the current measure and the current tokens for each part in the CombinedPart.
@@ -38,7 +51,7 @@ bool CombinedPart::get_next_tokens() {
     std::string _incompatibleTokenPart{};
 
     // pop next token if needed
-    Encoding* _sopranoToken = nullptr; // save soprano token for compatibility check
+    Encoding* _topVoice = nullptr; // save top voice for compatibility check
 
     for (auto& _part : parts_) {
         if (_part->needNewToken) {
@@ -53,10 +66,10 @@ bool CombinedPart::get_next_tokens() {
         }
         // check if we have an inconsistency
         // equality means tokens are compatible (not identical)
-        if (!_sopranoToken) {
-            _sopranoToken = _part->currentToken.get();
+        if (!_topVoice) {
+            _topVoice = _part->currentToken.get();
         }
-        else if (*_sopranoToken != *_part->currentToken) {
+        else if (*_topVoice != *_part->currentToken) {
             _incompatibleTokenPart = _part->part_name();
         }
     }

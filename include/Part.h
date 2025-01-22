@@ -207,12 +207,22 @@ class Part {
         // helper functions for transpose()
 
         // transpose to a key one level higher in the circle of fifths
-        void transpose_up( Note& note ) {
-            note.transpose( transposeUpRules );
+        void transpose_up( Note& note, bool byFifth ) {
+            if (byFifth) {
+                note.transpose( transposeUpAFifthRules );
+            }
+            else { 
+                note.transpose( transposeDownAFourthRules );
+            }
         }
         // transpose to a key one level lower in the circle of fifths
-        void transpose_down( Note& note ) {
-            note.transpose( transposeDownRules );
+        void transpose_down( Note& note, bool byFifth ) {
+            if (byFifth) {
+                note.transpose( transposeDownAFifthRules );
+            }
+            else {
+                note.transpose( transposeUpAFourthRules );
+            }
         }
 
         // helper functions for to_string()
